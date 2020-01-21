@@ -1,6 +1,6 @@
 import requests
-import json
 import threading
+from six import iteritems
 
 
 class ApiClient(object):
@@ -8,84 +8,144 @@ class ApiClient(object):
     Generic API Client for the Venmo API
     """
 
-    def __init__(self, access_token=None):
+    def __init__(self, access_token):
+        """
+        :param access_token: <str> access token you received for your account.
+        """
+        access_token = self.__validate_access_token(access_token)
 
         self.access_token = access_token
         self.configuration = {"host": "https://api.venmo.com/v1"}
-        self.default_headers = {"Authorization": f"Barear {self.access_token}",
-                                "User-Agent": "Venmo/7.29.1 (iPhone; iOS 13.0; Scale/2.0)"}
+        self.default_headers = {"Authorization": access_token,
+                                "User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0)"}
         self.session = requests.Session()
         self.session.headers.update(self.default_headers)
 
-    def call_api(self, resource_path, method, params=None,
-                 header_params=None, body=None, auth_settings=None, callback=None):
+    def call_api(self, resource_path, method, header_params=None, params=None, body=None, callback=None):
         """
-        Makes the HTTP request (Synchronous) and return the deserilized data.
-        To make it async, define a callback function.
+        Makes the HTTP request (Synchronous) and return the deserialized data.
+        To make it async multi-threaded, define a callback function.
+
+        :param resource_path: <str> Specific Venmo API path
+        :param method: <str> HTTP request method
+        :param header_params: <dict> request headers
+        :param params: <dict> request parameters (?=)
+        :param body: <dict> request body will be send as JSON
+        :param callback: <function> Needs to be provided for async
+
+        :return: response: <dict> {'status_code': <int>, 'headers': <dict>, 'body': <dict>}
         """
+
         if callback is None:
-            return self.__call_api(resource_path, method,
-                                   header_params, body,
-                                   callback)
+            return self.__call_api(resource_path=resource_path, method=method,
+                                   header_params=header_params, params=params,
+                                   body=body, callback=callback)
         else:
             thread = threading.Thread(target=self.__call_api,
-                                      args=(resource_path, method,
-                                            params, header_params,
-                                            body, auth_settings, callback))
+                                      args=(resource_path, method, header_params,
+                                            params, body, callback))
         thread.start()
         return thread
 
     def __call_api(self, resource_path, method,
-                   header_params=None, body=None,
-                   callback=None):
+                   header_params=None, params=None,
+                   body=None, callback=None):
         """
-        resource_path: url
-        method: Request verb
-        header_params: Request header parameteres
-        body: Json body
-        callback: Callback method for the async calls
+        Calls API on the provided path
+
+        :param resource_path: <str> Specific Venmo API path
+        :param method: <str> HTTP request method
+        :param header_params: <dict> request headers
+        :param body: <dict> request body will be send as JSON
+        :param callback: <function> Needs to be provided for async
+
+        :return: response: <dict> {'status_code': <int>, 'headers': <dict>, 'body': <dict>}
         """
 
         # Update the header with the required values
         header_params = header_params or {}
+
         if body:
             header_params.update({"Content-Type": "application/json"})
 
         url = self.configuration['host'] + resource_path
 
-        # Use a new session if it's threaded
+        # Use a new session for multi-threaded
         if callback:
             session = requests.Session()
             session.headers.update(self.default_headers)
 
         else:
             session = self.session
-            header_params.update({'Connection': 'keep-alive'})
 
         # perform request and return response
-        response_data, response_type = self.request(method, url, session,
-                                                    header_params=header_params,
-                                                    body=body)
+        processed_response = self.request(method, url, session,
+                                          header_params=header_params, params=params,
+                                          body=body)
 
-        self.last_response = response_data
-
-        # deserialize response data
-        deserialized_data = self.deserialize(response_data, response_type)
+        self.last_response = processed_response
 
         if callback:
-            callback(deserialized_data)
+            callback(processed_response)
         else:
-            return deserialized_data
+            return processed_response
 
-    def request(self, method, url, session, header_params=None, body=None):
+    def request(self, method, url, session, header_params=None, params=None, body=None):
+        """
+        Make a request with the provided information using a requests.session
+        :param method:
+        :param url:
+        :param session:
+        :param header_params:
+        :param params:
+        :param body:
+        :return:
+        """
 
-        if method not in ['POST', 'PUT', 'GET' 'DELETE']:
+        if method not in ['POST', 'PUT', 'GET', 'DELETE']:
             # TODO: Raise method is not valid exception here and make the exceptions
-            return "Method is not valid"
+            raise Exception(
+                "Method is not valid. Method must be POST, PUT, GET or DELETE in a string format")
 
-            # Sanitize?
         response = session.request(
-            method=method, url=url, headers=header_params, json=body)
+            method=method, url=url, headers=header_params, params=params, json=body)
 
-    def deserialize(self, response_data, response_type):
-        return {}
+        # Only accepts the 20x status codes.
+        response = self.validate_response(response)
+
+        return {"status_code": response.status_code, "headers": response.headers, "body": response.json()}
+
+    def validate_response(self, response):
+
+        if response.status_code in range(200, 205) and response.json:
+            return response
+
+        elif response.status_code >= 400:
+            raise Exception(f"Bad request error. Could not make the request -> "
+                            f"{response.status_code} {response.reason}.\nJSON: {response.json()}")
+        else:
+            raise Exception("Something went wrong -> " + f"{response.status_code} {response.reason}")
+
+    def __validate_access_token(self, access_token):
+        """
+        Validate the access_token
+        :param access_token:
+        :return:
+        """
+        if access_token[:6] != 'Bearer':
+            return f"Barear {access_token}"
+
+        return access_token
+
+    def clean_kwargs(self, all_params, params):
+
+        for key, val in iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method bla bla" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        return params

@@ -9,9 +9,8 @@ All the routes will be defined in the /apis/user_api.py
 
 class User:
 
-    @classmethod
-    def init(cls, user_id, username, first_name, last_name, display_name, profile_picture_url,
-             about, date_joined, is_group, is_active, crawler_type):
+    def __init__(self, user_id, username, first_name, last_name, display_name, profile_picture_url,
+                 about, date_joined, is_group, is_active):
         """
         Initialize a new User
         :param user_id:
@@ -24,7 +23,6 @@ class User:
         :param date_joined:
         :param is_group:
         :param is_active:
-        :param crawler_type: CrawlwerType
         :return:
         """
         self.id = user_id
@@ -37,18 +35,17 @@ class User:
         self.date_joined = date_joined
         self.is_group = is_group
         self.is_active = is_active
-        self.crawler_type = crawler_type
 
     @classmethod
-    def from_json(cls, json, is_profile=False, crawler_type=CrawlerType.IOS_API):
+    def from_json(cls, json, is_profile=False):
         """
         Init a new user in DB
         :param json:
         :param is_profile:
-        :param crawler_type: CrawlerType
         :return:
         """
         parser = UserJson(json, is_profile=is_profile)
+
         date_joined_timestamp = string_to_timestamp(parser.get_date_created())
 
         return cls(user_id=parser.get_user_id(),
@@ -60,19 +57,7 @@ class User:
                    about=parser.get_about(),
                    date_joined=date_joined_timestamp,
                    is_group=parser.get_is_group(),
-                   is_active=parser.get_is_active(),
-                   crawler_type=crawler_type)
-
-    @classmethod
-    def create_or_get_json(cls, json):
-        parser = UserJson(json)
-        uid = parser.get_user_id()
-        try:
-            return User.get(User.id == uid)
-
-        except User.DoesNotExist:
-            user = cls.from_json(json=json)
-            return user
+                   is_active=parser.get_is_active())
 
     def __str__(self):
         return f'id: {self.id}, username: {self.username}, firstname: {self.first_name}, lastname: {self.last_name}' +\
