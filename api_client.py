@@ -1,6 +1,7 @@
 import requests
 import threading
 from six import iteritems
+from models.exception import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
 
 
 class ApiClient(object):
@@ -103,9 +104,7 @@ class ApiClient(object):
         """
 
         if method not in ['POST', 'PUT', 'GET', 'DELETE']:
-            # TODO: Raise method is not valid exception here and make the exceptions
-            raise Exception(
-                "Method is not valid. Method must be POST, PUT, GET or DELETE in a string format")
+            raise InvalidHttpMethodError()
 
         response = session.request(
             method=method, url=url, headers=header_params, params=params, json=body)
@@ -120,11 +119,11 @@ class ApiClient(object):
         if response.status_code in range(200, 205) and response.json:
             return response
 
-        elif response.status_code >= 400:
-            raise Exception(f"Bad request error. Could not make the request -> "
-                            f"{response.status_code} {response.reason}.\nJSON: {response.json()}")
+        elif response.status_code == 400 and response.json().get('error').get('code') == 283:
+            raise ResourceNotFoundError()
+
         else:
-            raise Exception("Something went wrong -> " + f"{response.status_code} {response.reason}")
+            raise HttpCodeError(response=response)
 
     def __validate_access_token(self, access_token):
         """

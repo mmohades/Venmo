@@ -7,6 +7,9 @@ def string_to_timestamp(utc):
     :param utc: String, Example "2019-02-07T18:04:18"
     :return: int, timestamp
     """
+    if not utc:
+        return
+
     year = int(utc[:4])
     month = int(utc[5:7])
     day = int(utc[8:10])
