@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from random import randint, choice
+from string import ascii_uppercase
 
 
 def string_to_timestamp(utc):
@@ -35,6 +37,22 @@ def get_phone_model_from_json(app_json):
     return app.get(int(_id)) or "Not a phone app"
 
 
+def random_device_id():
+
+    BASE_DEVICE_ID = "88884260-05O3-8U81-58I1-2WA76F357GR9"
+
+    result = []
+    for char in BASE_DEVICE_ID:
+
+        if char.isdigit():
+            result.append(str(randint(0, 9)))
+        elif char == '-':
+            result.append('-')
+        else:
+            result.append(choice(ascii_uppercase))
+
+    return "".join(result)
+
 class Colors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -47,5 +65,8 @@ class Colors:
 
 
 def warn(message):
-    message = "WARNING: " + message
     print(Colors.WARNING + message + Colors.ENDC)
+
+
+def confirm(message):
+    print(Colors.OKBLUE + message + Colors.ENDC)

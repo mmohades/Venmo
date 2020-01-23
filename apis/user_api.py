@@ -3,12 +3,6 @@ from models.user import User
 from models.transaction import Transaction
 from models.exception import InvalidArgumentError, ArgumentMissingError
 
-"""
-This class will be for the user related routes
-They need to use the api_client for making the requests. Routes will be defined here tho.
-Routes and formatting will be here.
-"""
-
 
 class UserApi(object):
     def __init__(self, api_client):
@@ -26,14 +20,16 @@ class UserApi(object):
         """
 
         resource_path = '/users'
-        wrapped_callback = self._wrap_callback(callback=callback,
-                                               data_type=User)
+        wrapped_callback = self.__wrap_callback(callback=callback,
+                                                data_type=User)
 
-        offset = self.get_offset_by_page(page_number=page,
-                                         max_number_per_page=50,
-                                         max_offset=9900)
+        offset_limit_params = self.__prepare_offset_limit_params(page_number=page,
+                                                                 max_number_per_page=50,
+                                                                 max_offset=9900,
+                                                                 count=count)
+        params = {'query': query}
+        params.update(offset_limit_params)
 
-        params = {'query': query, 'offset': offset, 'limit': count}
         response = self.api_client.call_api(resource_path=resource_path, params=params,
                                             method='GET', callback=wrapped_callback)
 
@@ -51,8 +47,8 @@ class UserApi(object):
 
         # Prepare the request
         resource_path = f'/users/{user_id}'
-        wrapped_callback = self._wrap_callback(callback=callback,
-                                               data_type=User)
+        wrapped_callback = self.__wrap_callback(callback=callback,
+                                                data_type=User)
         # Make the request
         response = self.api_client.call_api(resource_path=resource_path,
                                             method='GET',
@@ -74,16 +70,15 @@ class UserApi(object):
 
         if not user_id:
             raise ArgumentMissingError(arguments=("user", "user_id"))
-        offset = self.get_offset_by_page(page_number=page,
-                                         max_number_per_page=1337,
-                                         max_offset=9999999999999999999)
-
-        params = {'offset': offset, 'limit': count}
+        params = self.__prepare_offset_limit_params(page_number=page,
+                                                    max_number_per_page=1337,
+                                                    max_offset=9999999999999999999,
+                                                    count=count)
 
         # Prepare the request
         resource_path = f'/users/{user_id}/friends'
-        wrapped_callback = self._wrap_callback(callback=callback,
-                                               data_type=User)
+        wrapped_callback = self.__wrap_callback(callback=callback,
+                                                data_type=User)
         # Make the request
         response = self.api_client.call_api(resource_path=resource_path,
                                             method='GET', params=params,
@@ -102,17 +97,16 @@ class UserApi(object):
 
         if not user_id:
             raise ArgumentMissingError(arguments=("user", "user_id"))
-        offset = self.get_offset_by_page(page_number=page,
-                                         max_number_per_page=50,
-                                         max_offset=9900)
-
-        params = {'offset': offset, 'limit': count}
+        params = self.__prepare_offset_limit_params(page_number=page,
+                                                    max_number_per_page=50,
+                                                    max_offset=9900,
+                                                    count=count)
 
         # Prepare the request
         resource_path = f'/stories/target-or-actor/{user_id}'
 
-        wrapped_callback = self._wrap_callback(callback=callback,
-                                               data_type=Transaction)
+        wrapped_callback = self.__wrap_callback(callback=callback,
+                                                data_type=Transaction)
         # Make the request
         response = self.api_client.call_api(resource_path=resource_path,
                                             method='GET', params=params,
@@ -135,17 +129,16 @@ class UserApi(object):
             raise ArgumentMissingError(arguments=("user", "user_id"),
                                        reason="User or user_id must be provided for both users.")
 
-        offset = self.get_offset_by_page(page_number=page,
-                                         max_number_per_page=50,
-                                         max_offset=9900)
-
-        params = {'offset': offset, 'limit': count}
+        params = self.__prepare_offset_limit_params(page_number=page,
+                                                    max_number_per_page=50,
+                                                    max_offset=9900,
+                                                    count=count)
 
         # Prepare the request
         resource_path = f'/stories/target-or-actor/{user_id_one}/target-or-actor/{user_id_two}'
 
-        wrapped_callback = self._wrap_callback(callback=callback,
-                                               data_type=Transaction)
+        wrapped_callback = self.__wrap_callback(callback=callback,
+                                                data_type=Transaction)
         # Make the request
         response = self.api_client.call_api(resource_path=resource_path,
                                             method='GET', params=params,
@@ -156,7 +149,7 @@ class UserApi(object):
 
         return self.__deserialize(response=response, data_type=Transaction)
 
-    def _wrap_callback(self, callback, data_type):
+    def __wrap_callback(self, callback, data_type):
         """
         :param callback: <function> Function that was provided by the user
         :param data_type: <class> It can be either User or Transaction
@@ -171,7 +164,6 @@ class UserApi(object):
             return callback(deserialized_data)
 
         return wrapper
-
 
     def __deserialize(self, response, data_type):
         """Extract one or a list of users from the api_client requested response.
@@ -201,11 +193,13 @@ class UserApi(object):
         """
         return [data_type.from_json(obj) for obj in json_list]
 
-    def get_offset_by_page(self, page_number, max_number_per_page, max_offset):
+    def __prepare_offset_limit_params(self, page_number, max_number_per_page, max_offset, count):
         """Get the offset for going to that page."""
         max_page = max_offset//max_number_per_page + 1
         if page_number == 0 or page_number > max_page:
             raise InvalidArgumentError(argument_name="'page number'",
                                        reason=f"Page number must be an int bigger than 1 smaller than {max_page}.")
 
-        return (page_number - 1) * max_number_per_page
+        offset = (page_number - 1) * max_number_per_page
+
+        return {'offset': offset, 'limit': count}

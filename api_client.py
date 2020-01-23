@@ -1,6 +1,8 @@
 import requests
 import threading
+from json import JSONDecodeError
 from six import iteritems
+from typing import List, Dict
 from models.exception import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
 
 
@@ -9,7 +11,7 @@ class ApiClient(object):
     Generic API Client for the Venmo API
     """
 
-    def __init__(self, access_token):
+    def __init__(self, access_token=None):
         """
         :param access_token: <str> access token you received for your account.
         """
@@ -17,12 +19,26 @@ class ApiClient(object):
 
         self.access_token = access_token
         self.configuration = {"host": "https://api.venmo.com/v1"}
-        self.default_headers = {"Authorization": access_token,
-                                "User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0)"}
+
+        self.default_headers = {"User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0)"}
+        if self.access_token:
+            self.default_headers.update({"Authorization": self.access_token})
+
         self.session = requests.Session()
         self.session.headers.update(self.default_headers)
 
-    def call_api(self, resource_path, method, header_params=None, params=None, body=None, callback=None):
+    def update_access_token(self, access_token):
+        self.access_token = self.__validate_access_token(access_token=access_token)
+        self.default_headers.update({"Authorization": self.access_token})
+        self.session.headers.update({"Authorization": self.access_token})
+
+    def call_api(self, resource_path: str, method: str,
+                 header_params: dict = None,
+                 params: dict = None,
+                 body: dict = None,
+                 callback=None,
+                 ok_error_codes: List[int] = None):
+
         """
         Makes the HTTP request (Synchronous) and return the deserialized data.
         To make it async multi-threaded, define a callback function.
@@ -40,7 +56,8 @@ class ApiClient(object):
         if callback is None:
             return self.__call_api(resource_path=resource_path, method=method,
                                    header_params=header_params, params=params,
-                                   body=body, callback=callback)
+                                   body=body, callback=callback,
+                                   ok_error_codes=ok_error_codes)
         else:
             thread = threading.Thread(target=self.__call_api,
                                       args=(resource_path, method, header_params,
@@ -50,7 +67,8 @@ class ApiClient(object):
 
     def __call_api(self, resource_path, method,
                    header_params=None, params=None,
-                   body=None, callback=None):
+                   body=None, callback=None,
+                   ok_error_codes: List[int] = None):
         """
         Calls API on the provided path
 
@@ -82,7 +100,7 @@ class ApiClient(object):
         # perform request and return response
         processed_response = self.request(method, url, session,
                                           header_params=header_params, params=params,
-                                          body=body)
+                                          body=body, ok_error_codes=ok_error_codes)
 
         self.last_response = processed_response
 
@@ -91,7 +109,11 @@ class ApiClient(object):
         else:
             return processed_response
 
-    def request(self, method, url, session, header_params=None, params=None, body=None):
+    def request(self, method, url, session,
+                header_params=None,
+                params=None,
+                body=None,
+                ok_error_codes: List[int] = None):
         """
         Make a request with the provided information using a requests.session
         :param method:
@@ -100,6 +122,7 @@ class ApiClient(object):
         :param header_params:
         :param params:
         :param body:
+
         :return:
         """
 
@@ -110,19 +133,31 @@ class ApiClient(object):
             method=method, url=url, headers=header_params, params=params, json=body)
 
         # Only accepts the 20x status codes.
-        response = self.validate_response(response)
+        validated_response = self.validate_response(response, ok_error_codes=ok_error_codes)
 
-        return {"status_code": response.status_code, "headers": response.headers, "body": response.json()}
+        return validated_response
 
-    def validate_response(self, response):
+    def validate_response(self, response, ok_error_codes: List[int] = None):
+
+        try:
+            body = response.json()
+            headers = response.headers
+        except JSONDecodeError:
+            body = {}
+            headers = {}
+
+        built_response = {"status_code": response.status_code, "headers": headers, "body": body}
 
         if response.status_code in range(200, 205) and response.json:
-            return response
+            return built_response
 
         elif response.status_code == 400 and response.json().get('error').get('code') == 283:
             raise ResourceNotFoundError()
 
         else:
+            if body and ok_error_codes and body.get('error').get('code') in ok_error_codes:
+                return built_response
+
             raise HttpCodeError(response=response)
 
     def __validate_access_token(self, access_token):
@@ -131,6 +166,9 @@ class ApiClient(object):
         :param access_token:
         :return:
         """
+        if not access_token:
+            return
+
         if access_token[:6] != 'Bearer':
             return f"Barear {access_token}"
 

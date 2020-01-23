@@ -1,7 +1,17 @@
-
-# HTTP Requests Exceptions
 from json import JSONDecodeError
 
+
+# ======= Authentication Exceptions =======
+
+class AuthenticationFailedError(Exception):
+    """Raised when there is an invalid argument passed into a method"""
+
+    def __init__(self, msg: str = None, reason: str = None):
+        self.msg = msg or f"Authentication failed. " + reason or ""
+        super(AuthenticationFailedError, self).__init__(self.msg)
+
+
+# ======= HTTP Requests Exceptions =======
 
 class InvalidHttpMethodError(Exception):
     """HTTP Method must be POST, PUT, GET or DELETE in a string format"""
@@ -37,8 +47,7 @@ class HttpCodeError(Exception):
         super(HttpCodeError, self).__init__(self.msg)
 
 
-# Methods Exceptions
-
+# ======= Methods Exceptions =======
 
 class InvalidArgumentError(Exception):
     """Raised when there is an invalid argument passed into a method"""
@@ -49,7 +58,7 @@ class InvalidArgumentError(Exception):
 
 
 class ArgumentMissingError(Exception):
-    """Raised when there is an invalid argument passed into a method"""
+    """Raised when there is an argument missing in a function"""
 
     def __init__(self, msg: str = None, arguments: tuple = None, reason=None):
         self.msg = msg or f"One of f{arguments} must be passed to this method." + (reason or "")
