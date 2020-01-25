@@ -9,7 +9,7 @@ class Transaction(object):
                  date_updated, payment_type, audience, status,
                  note, device_used, actor, target):
 
-        super()
+        super().__init__()
 
         self.id = story_id
         self.payment_id = payment_id

@@ -1,6 +1,5 @@
 from api_client import ApiClient
-from apis.user_api import UserApi
-from apis.auth_api import AuthenticationApi
+from apis import UserApi, AuthenticationApi, PaymentApi
 
 
 class VenmoApi(object):
@@ -13,10 +12,8 @@ class VenmoApi(object):
         super().__init__()
         self.__access_token = access_token
         self.__api_client = ApiClient(access_token=access_token)
-        self.__user_api = UserApi(self.__api_client)
-
-    def user(self):
-        return self.__user_api
+        self.user = UserApi(self.__api_client)
+        self.payment = PaymentApi(self.__api_client)
 
     @classmethod
     def get_auth_token(cls, username: str, password: str, device_id: str = None):

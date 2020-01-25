@@ -63,3 +63,11 @@ class ArgumentMissingError(Exception):
     def __init__(self, msg: str = None, arguments: tuple = None, reason=None):
         self.msg = msg or f"One of f{arguments} must be passed to this method." + (reason or "")
         super(ArgumentMissingError, self).__init__(self.msg)
+
+# ======= Payment =======
+
+
+class NoPaymentMethodFoundError(Exception):
+    def __init__(self, msg: str = None, reason=None):
+        self.msg = msg or ("No eligible payment method found." + "" or reason)
+        super(NoPaymentMethodFoundError, self).__init__(self.msg)

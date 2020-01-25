@@ -2,12 +2,13 @@ from typing import List, Union
 from models.user import User
 from models.transaction import Transaction
 from models.exception import InvalidArgumentError, ArgumentMissingError
+from utils import deserialize, wrap_callback
 
 
 class UserApi(object):
     def __init__(self, api_client):
         super().__init__()
-        self.api_client = api_client
+        self.__api_client = api_client
 
     def search_for_users(self, query: str, callback=None,
                          page: int = 1, count: int = 50) -> List[User]:
@@ -20,8 +21,8 @@ class UserApi(object):
         """
 
         resource_path = '/users'
-        wrapped_callback = self.__wrap_callback(callback=callback,
-                                                data_type=User)
+        wrapped_callback = wrap_callback(callback=callback,
+                                         data_type=User)
 
         offset_limit_params = self.__prepare_offset_limit_params(page_number=page,
                                                                  max_number_per_page=50,
@@ -30,13 +31,13 @@ class UserApi(object):
         params = {'query': query}
         params.update(offset_limit_params)
 
-        response = self.api_client.call_api(resource_path=resource_path, params=params,
-                                            method='GET', callback=wrapped_callback)
+        response = self.__api_client.call_api(resource_path=resource_path, params=params,
+                                              method='GET', callback=wrapped_callback)
 
         if callback:
             return []
 
-        return self.__deserialize(response=response, data_type=User)
+        return deserialize(response=response, data_type=User)
 
     def get_user_profile(self, user_id: str, callback=None) -> Union[User, None]:
         """
@@ -47,17 +48,17 @@ class UserApi(object):
 
         # Prepare the request
         resource_path = f'/users/{user_id}'
-        wrapped_callback = self.__wrap_callback(callback=callback,
-                                                data_type=User)
+        wrapped_callback = wrap_callback(callback=callback,
+                                         data_type=User)
         # Make the request
-        response = self.api_client.call_api(resource_path=resource_path,
-                                            method='GET',
-                                            callback=wrapped_callback)
-        # Return or process the response
+        response = self.__api_client.call_api(resource_path=resource_path,
+                                              method='GET',
+                                              callback=wrapped_callback)
+        # Return the thread or process the response
         if callback:
-            return
+            return response
 
-        return self.__deserialize(response=response, data_type=User)
+        return deserialize(response=response, data_type=User)
 
     def get_user_friends_list(self, user: User = None, user_id: str = None,
                               callback=None,
@@ -77,17 +78,17 @@ class UserApi(object):
 
         # Prepare the request
         resource_path = f'/users/{user_id}/friends'
-        wrapped_callback = self.__wrap_callback(callback=callback,
-                                                data_type=User)
+        wrapped_callback = wrap_callback(callback=callback,
+                                         data_type=User)
         # Make the request
-        response = self.api_client.call_api(resource_path=resource_path,
-                                            method='GET', params=params,
-                                            callback=wrapped_callback)
+        response = self.__api_client.call_api(resource_path=resource_path,
+                                              method='GET', params=params,
+                                              callback=wrapped_callback)
         # Return or process the response
         if callback:
             return
 
-        return self.__deserialize(response=response, data_type=User)
+        return deserialize(response=response, data_type=User)
 
     def get_user_transactions(self, user: User = None, user_id: str = None,
                               callback=None,
@@ -105,17 +106,17 @@ class UserApi(object):
         # Prepare the request
         resource_path = f'/stories/target-or-actor/{user_id}'
 
-        wrapped_callback = self.__wrap_callback(callback=callback,
-                                                data_type=Transaction)
+        wrapped_callback = wrap_callback(callback=callback,
+                                         data_type=Transaction)
         # Make the request
-        response = self.api_client.call_api(resource_path=resource_path,
-                                            method='GET', params=params,
-                                            callback=wrapped_callback)
+        response = self.__api_client.call_api(resource_path=resource_path,
+                                              method='GET', params=params,
+                                              callback=wrapped_callback)
         # Return or process the response
         if callback:
             return
 
-        return self.__deserialize(response=response, data_type=Transaction)
+        return deserialize(response=response, data_type=Transaction)
 
     def get_transaction_between_two_users(self, user_one: User = None, user_id_one: str = None,
                                           user_two: User = None, user_id_two: str = None,
@@ -137,61 +138,17 @@ class UserApi(object):
         # Prepare the request
         resource_path = f'/stories/target-or-actor/{user_id_one}/target-or-actor/{user_id_two}'
 
-        wrapped_callback = self.__wrap_callback(callback=callback,
-                                                data_type=Transaction)
+        wrapped_callback = wrap_callback(callback=callback,
+                                         data_type=Transaction)
         # Make the request
-        response = self.api_client.call_api(resource_path=resource_path,
-                                            method='GET', params=params,
-                                            callback=wrapped_callback)
+        response = self.__api_client.call_api(resource_path=resource_path,
+                                              method='GET', params=params,
+                                              callback=wrapped_callback)
         # Return or process the response
         if callback:
             return
 
-        return self.__deserialize(response=response, data_type=Transaction)
-
-    def __wrap_callback(self, callback, data_type):
-        """
-        :param callback: <function> Function that was provided by the user
-        :param data_type: <class> It can be either User or Transaction
-        :return wrapped_callback: <function> or <NoneType> The user callback wrapped for json parsing.
-        """
-        if not callback:
-            return None
-
-        def wrapper(response):
-
-            deserialized_data = self.__deserialize(response=response, data_type=data_type)
-            return callback(deserialized_data)
-
-        return wrapper
-
-    def __deserialize(self, response, data_type):
-        """Extract one or a list of users from the api_client requested response.
-        :param response:
-        :param data_type:
-        :return:
-        """
-        body = response.get('body')
-
-        if not body:
-            raise Exception("Can't process an empty response body.")
-
-        data = body.get('data')
-
-        # Return a list of users (Friends list, etc)
-        if isinstance(data, list):
-            return self.__get_objs_from_json_list(json_list=data, data_type=data_type)
-
-        return data_type.from_json(json=data)
-
-
-    def __get_objs_from_json_list(self, json_list, data_type):
-        """Process JSON for User/Transaction
-        :param json_list: <list> a list of objs
-        :param data_type: <class> Either User/Transaction
-        :return: <list> a list of <User>
-        """
-        return [data_type.from_json(obj) for obj in json_list]
+        return deserialize(response=response, data_type=Transaction)
 
     def __prepare_offset_limit_params(self, page_number, max_number_per_page, max_offset, count):
         """Get the offset for going to that page."""

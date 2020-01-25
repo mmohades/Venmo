@@ -2,7 +2,7 @@ import requests
 import threading
 from json import JSONDecodeError
 from six import iteritems
-from typing import List, Dict
+from typing import List
 from models.exception import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
 
 
@@ -49,7 +49,7 @@ class ApiClient(object):
         :param params: <dict> request parameters (?=)
         :param body: <dict> request body will be send as JSON
         :param callback: <function> Needs to be provided for async
-
+        :param ok_error_codes: <List[int]> A list of integer error codes that you don't want an exception for.
         :return: response: <dict> {'status_code': <int>, 'headers': <dict>, 'body': <dict>}
         """
 
@@ -77,6 +77,7 @@ class ApiClient(object):
         :param header_params: <dict> request headers
         :param body: <dict> request body will be send as JSON
         :param callback: <function> Needs to be provided for async
+        :param ok_error_codes: <List[int]> A list of integer error codes that you don't want an exception for.
 
         :return: response: <dict> {'status_code': <int>, 'headers': <dict>, 'body': <dict>}
         """
@@ -103,6 +104,7 @@ class ApiClient(object):
                                           body=body, ok_error_codes=ok_error_codes)
 
         self.last_response = processed_response
+        print(processed_response)
 
         if callback:
             callback(processed_response)
@@ -122,6 +124,7 @@ class ApiClient(object):
         :param header_params:
         :param params:
         :param body:
+        :param ok_error_codes: <List[int]> A list of integer error codes that you don't want an exception for.
 
         :return:
         """
@@ -133,12 +136,17 @@ class ApiClient(object):
             method=method, url=url, headers=header_params, params=params, json=body)
 
         # Only accepts the 20x status codes.
-        validated_response = self.validate_response(response, ok_error_codes=ok_error_codes)
+        validated_response = self.__validate_response(response, ok_error_codes=ok_error_codes)
 
         return validated_response
 
-    def validate_response(self, response, ok_error_codes: List[int] = None):
-
+    def __validate_response(self, response, ok_error_codes: List[int] = None):
+        """
+        Validate and build a new validated response.
+        :param response:
+        :param ok_error_codes: <List[int]> A list of integer error codes that you don't want an exception for.
+        :return:
+        """
         try:
             body = response.json()
             headers = response.headers

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from random import randint, choice
 from string import ascii_uppercase
+from enum import Enum
+from typing import Dict
 
 
 def string_to_timestamp(utc):
@@ -53,7 +55,55 @@ def random_device_id():
 
     return "".join(result)
 
-class Colors:
+
+def deserialize(response: Dict, data_type):
+    """Extract one or a list of Objects from the api_client structured response.
+    :param response: <Dict>
+    :param data_type: <Generic>
+    :return:
+    """
+
+    body = response.get('body')
+
+    if not body:
+        raise Exception("Can't process an empty response body.")
+
+    data = body.get('data')
+
+    # Return a list of <class>
+    if isinstance(data, list):
+        return __get_objs_from_json_list(json_list=data, data_type=data_type)
+
+    return data_type.from_json(json=data)
+
+
+def wrap_callback(callback, data_type):
+    """
+    :param callback: <function> Function that was provided by the user
+    :param data_type: <class> It can be either User or Transaction
+    :return wrapped_callback: <function> or <NoneType> The user callback wrapped for json parsing.
+    """
+    if not callback:
+        return None
+
+    def wrapper(response):
+
+        deserialized_data = deserialize(response=response, data_type=data_type)
+        return callback(deserialized_data)
+
+    return wrapper
+
+
+def __get_objs_from_json_list(json_list, data_type):
+    """Process JSON for User/Transaction
+    :param json_list: <list> a list of objs
+    :param data_type: <class> Either User/Transaction
+    :return: <list> a list of <User>
+    """
+    return [data_type.from_json(obj) for obj in json_list]
+
+
+class Colors(Enum):
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'

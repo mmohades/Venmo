@@ -7,12 +7,12 @@ class AuthenticationApi(object):
     def __init__(self, api_client: ApiClient, device_id: str = None):
         super().__init__()
 
-        self.device_id = device_id or random_device_id()
-        self.api_client = api_client
+        self.__device_id = device_id or random_device_id()
+        self.__api_client = api_client
 
     def login_using_credentials(self, username: str, password: str):
         """
-
+        Pass your username and password to get an access_token for using the API.
         :param username: <str> Phone, email or username
         :param password: <str> Your account password to login
         :return:
@@ -20,11 +20,11 @@ class AuthenticationApi(object):
 
         # Give some warnings to the user for their future benefit
         warn("IMPORTANT: Take a note of your device id to avoid 2-Factor-Authentication for your next login.")
-        print(f"device-id: {self.device_id}")
+        print(f"device-id: {self.__device_id}")
         warn("IMPORTANT: Your Access Token will never expire, unless you logout using it."
              " Take a note of it for your future use or even for logging out, you will need it.\n")
 
-        header_params = {'device-id': self.device_id,
+        header_params = {'device-id': self.__device_id,
                          'Content-Type': 'application/json',
                          'Host': 'api.venmo.com'
                          }
@@ -35,8 +35,8 @@ class AuthenticationApi(object):
                 }
         resource_path = '/oauth/access_token'
 
-        response = self.api_client.call_api(resource_path=resource_path, header_params=header_params,
-                                            body=body, method='POST', ok_error_codes=[81109])
+        response = self.__api_client.call_api(resource_path=resource_path, header_params=header_params,
+                                              body=body, method='POST', ok_error_codes=[81109])
 
         if response.get('body').get('error'):
             access_token = self.__two_factor_process(response=response)
@@ -56,21 +56,21 @@ class AuthenticationApi(object):
         user_otp = self.__ask_user_for_otp_password()
 
         access_token = self.__login_using_otp(user_otp, otp_secret)
-        self.api_client.update_access_token(access_token=access_token)
+        self.__api_client.update_access_token(access_token=access_token)
 
         return access_token
 
     def __send_text_otp(self, otp_secret):
 
-        header_params = {'device-id': self.device_id,
+        header_params = {'device-id': self.__device_id,
                          'Content-Type': 'application/json',
                          'venmo-otp-secret': otp_secret
                          }
         body = {"via": "sms"}
         resource_path = '/account/two-factor/token'
 
-        response = self.api_client.call_api(resource_path=resource_path, header_params=header_params,
-                                            body=body, method='POST', ok_error_codes=[81109])
+        response = self.__api_client.call_api(resource_path=resource_path, header_params=header_params,
+                                              body=body, method='POST', ok_error_codes=[81109])
 
         if response['status_code'] != 200:
             reason = None
@@ -92,34 +92,38 @@ class AuthenticationApi(object):
 
     def __login_using_otp(self, user_otp, otp_secret):
 
-        header_params = {'device-id': self.device_id,
+        header_params = {'device-id': self.__device_id,
                          'venmo-otp': user_otp,
                          'venmo-otp-secret': otp_secret
                          }
         params = {'client_id': 1}
         resource_path = '/oauth/access_token'
 
-        response = self.api_client.call_api(resource_path=resource_path, header_params=header_params,
-                                            params=params,
-                                            method='POST')
+        response = self.__api_client.call_api(resource_path=resource_path, header_params=header_params,
+                                              params=params,
+                                              method='POST')
 
         return response['body']['access_token']
 
     def __trust_this_device(self):
 
-        header_params = {'device-id': self.device_id}
+        header_params = {'device-id': self.__device_id}
         resource_path = '/users/devices'
 
-        self.api_client.call_api(resource_path=resource_path,
-                                 header_params=header_params,
-                                 method='POST')
+        self.__api_client.call_api(resource_path=resource_path,
+                                   header_params=header_params,
+                                   method='POST')
 
         confirm(f"Successfully added your device id to the list of the trusted devices.")
-        print(f"Use the same device-id  {self.device_id}  next time to avoid 2-factor-auth process.")
+        print(f"Use the same device-id  {self.__device_id}  next time to avoid 2-factor-auth process.")
 
     @staticmethod
-    def log_out(access_token):
-
+    def log_out(access_token: str):
+        """
+        Revoke your access_token
+        :param access_token: <str>
+        :return:
+        """
         resource_path = '/oauth/access_token'
         api_client = ApiClient(access_token=access_token)
 
