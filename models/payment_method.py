@@ -2,8 +2,10 @@ from typing import Dict
 from enum import Enum
 
 
-class PaymentMethod:
+class PaymentMethod(object):
     def __init__(self, pid: str, p_role: str, p_name: str, p_type: str):
+        super().__init__()
+
         self.id = pid
         self.role = PaymentRole(p_role)
         self.name = p_name

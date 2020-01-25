@@ -7,7 +7,7 @@ All the routes will be defined in the /apis/user_api.py
 """
 
 
-class User:
+class User(object):
 
     def __init__(self, user_id, username, first_name, last_name, display_name, profile_picture_url,
                  about, date_joined, is_group, is_active):
@@ -25,6 +25,8 @@ class User:
         :param is_active:
         :return:
         """
+        super().__init__()
+
         self.id = user_id
         self.username = username
         self.first_name = first_name

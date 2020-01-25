@@ -31,7 +31,7 @@ class PaymentApi(object):
                    funding_source_id: str = None,
                    privacy_setting: str = PaymentPrivacy.private.value,
                    target_user_id: int = None, target_user: User = None,
-                   callback=None):
+                   callback=None) -> bool:
         """
         :param amount: <float>
         :param note: <str>
@@ -40,7 +40,7 @@ class PaymentApi(object):
         :param target_user_id: <str>
         :param target_user: <User>
         :param callback: <function>
-        :return:
+        :return: <bool> Either the transaction was successful or an exception will rise.
         """
 
         return self.__send_or_request_money(amount=amount,
@@ -56,8 +56,17 @@ class PaymentApi(object):
                       note: str,
                       privacy_setting: str = PaymentPrivacy.private.value,
                       target_user_id: int = None, target_user: User = None,
-                      callback=None):
+                      callback=None) -> bool:
+        """
 
+        :param amount: <float> amount of money to be requested
+        :param note: <str> message/note of the transaction
+        :param privacy_setting: <str> private/friends/public (enum)
+        :param target_user_id: <str> the user id of the person you are asking the money from
+        :param target_user: <User> The user object or user_id is required
+        :param callback: callback function
+        :return: <bool> Either the transaction was successful or an exception will rise.
+        """
         return self.__send_or_request_money(amount=amount,
                                             note=note,
                                             is_send_money=False,
@@ -74,7 +83,18 @@ class PaymentApi(object):
                                 privacy_setting: str = PaymentPrivacy.private.value,
                                 target_user_id: int = None, target_user: User = None,
                                 callback=None):
-
+        """
+        Generic method for sending and requesting money
+        :param amount:
+        :param note:
+        :param is_send_money:
+        :param funding_source_id:
+        :param privacy_setting:
+        :param target_user_id:
+        :param target_user:
+        :param callback:
+        :return:
+        """
         if not target_user and not target_user_id:
             raise ArgumentMissingError(arguments=('target_user_id', 'target_user'))
 
@@ -111,11 +131,14 @@ class PaymentApi(object):
         # if no exception raises, then it was successful
         return True
 
-    def get_default_payment_method(self):
+    def get_default_payment_method(self) -> PaymentMethod:
+        """
+        Search in all payment_methods and find the one that has payment_role of Default
+        :return:
+        """
         payment_methods = self.get_payment_methods()
 
         for p_method in payment_methods:
-            print(p_method)
             if p_method.role == PaymentRole.default:
                 return p_method
 

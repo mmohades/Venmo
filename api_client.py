@@ -1,7 +1,6 @@
 import requests
 import threading
 from json import JSONDecodeError
-from six import iteritems
 from typing import List
 from models.exception import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
 
@@ -15,6 +14,8 @@ class ApiClient(object):
         """
         :param access_token: <str> access token you received for your account.
         """
+        super().__init__()
+
         access_token = self.__validate_access_token(access_token)
 
         self.access_token = access_token
@@ -180,16 +181,3 @@ class ApiClient(object):
             return f"Barear {access_token}"
 
         return access_token
-
-    def clean_kwargs(self, all_params, params):
-
-        for key, val in iteritems(params['kwargs']):
-            if key not in all_params:
-                raise TypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method bla bla" % key
-                )
-            params[key] = val
-        del params['kwargs']
-
-        return params

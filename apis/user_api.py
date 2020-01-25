@@ -60,9 +60,11 @@ class UserApi(object):
 
         return deserialize(response=response, data_type=User)
 
-    def get_user_friends_list(self, user: User = None, user_id: str = None,
+    def get_user_friends_list(self, user: User = None,
+                              user_id: str = None,
                               callback=None,
-                              page: int = 1, count: int = 1337):
+                              page: int = 1,
+                              count: int = 1337) -> Union[User, None]:
         """
 
         :return users_list: <list> A list of <User> objects or empty
@@ -92,7 +94,8 @@ class UserApi(object):
 
     def get_user_transactions(self, user: User = None, user_id: str = None,
                               callback=None,
-                              page: int = 1, count: int = 50):
+                              page: int = 1,
+                              count: int = 50) -> Union[Transaction, None]:
 
         user_id = user_id or user.id
 
@@ -118,10 +121,13 @@ class UserApi(object):
 
         return deserialize(response=response, data_type=Transaction)
 
-    def get_transaction_between_two_users(self, user_one: User = None, user_id_one: str = None,
-                                          user_two: User = None, user_id_two: str = None,
+    def get_transaction_between_two_users(self, user_one: User = None,
+                                          user_id_one: str = None,
+                                          user_two: User = None,
+                                          user_id_two: str = None,
                                           callback=None,
-                                          page: int = 1, count: int = 50):
+                                          page: int = 1,
+                                          count: int = 50) -> Union[Transaction, None]:
 
         user_id_one = user_id_one or user_one.id
         user_id_two = user_id_two or user_two.id

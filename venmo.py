@@ -1,13 +1,13 @@
 from api_client import ApiClient
-from apis import UserApi, AuthenticationApi, PaymentApi
+from apis import *
 
 
 class VenmoApi(object):
 
     def __init__(self, access_token: str):
         """
-
-        :param access_token: <str> Get access token to work with the API.
+        VenmoAPI Client
+        :param access_token: <str> Need access_token to work with the API.
         """
         super().__init__()
         self.__access_token = access_token
@@ -16,11 +16,22 @@ class VenmoApi(object):
         self.payment = PaymentApi(self.__api_client)
 
     @classmethod
-    def get_auth_token(cls, username: str, password: str, device_id: str = None):
-
-        auth_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
-        return auth_api.login_using_credentials(username=username, password=password)
+    def get_access_token(cls, username: str, password: str, device_id: str = None) -> str:
+        """
+        Log in using your credentials and get an access_token to use in the API
+        :param username:
+        :param password:
+        :param device_id:
+        :return:
+        """
+        authn_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
+        return authn_api.login_using_credentials(username=username, password=password)
 
     @classmethod
-    def log_out(cls, access_token):
+    def log_out(cls, access_token) -> bool:
+        """
+        Revoke your access_token. Log out, in other words.
+        :param access_token:
+        :return:
+        """
         return AuthenticationApi.log_out(access_token=access_token)

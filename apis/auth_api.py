@@ -10,7 +10,7 @@ class AuthenticationApi(object):
         self.__device_id = device_id or random_device_id()
         self.__api_client = api_client
 
-    def login_using_credentials(self, username: str, password: str):
+    def login_using_credentials(self, username: str, password: str) -> str:
         """
         Pass your username and password to get an access_token for using the API.
         :param username: <str> Phone, email or username
@@ -118,7 +118,7 @@ class AuthenticationApi(object):
         print(f"Use the same device-id  {self.__device_id}  next time to avoid 2-factor-auth process.")
 
     @staticmethod
-    def log_out(access_token: str):
+    def log_out(access_token: str) -> bool:
         """
         Revoke your access_token
         :param access_token: <str>
