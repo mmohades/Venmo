@@ -104,7 +104,6 @@ class ApiClient(object):
                                           body=body, ok_error_codes=ok_error_codes)
 
         self.last_response = processed_response
-        print(processed_response)
 
         if callback:
             callback(processed_response)

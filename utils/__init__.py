@@ -88,6 +88,9 @@ def wrap_callback(callback, data_type):
 
     def wrapper(response):
 
+        if not data_type:
+            return callback(True)
+
         deserialized_data = deserialize(response=response, data_type=data_type)
         return callback(deserialized_data)
 
