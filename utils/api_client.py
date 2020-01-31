@@ -140,7 +140,8 @@ class ApiClient(object):
 
         return validated_response
 
-    def __validate_response(self, response, ok_error_codes: List[int] = None):
+    @staticmethod
+    def __validate_response(response, ok_error_codes: List[int] = None):
         """
         Validate and build a new validated response.
         :param response:
@@ -168,7 +169,8 @@ class ApiClient(object):
 
             raise HttpCodeError(response=response)
 
-    def __validate_access_token(self, access_token):
+    @staticmethod
+    def __validate_access_token(access_token):
         """
         Validate the access_token
         :param access_token:

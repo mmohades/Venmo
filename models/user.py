@@ -1,10 +1,5 @@
 from utils import string_to_timestamp
-
-"""
-This class will be only the model for User.
-All the routes will be defined in the /apis/user_api.py
-
-"""
+from utils.json_schema import JSONSchema
 
 
 class User(object):
@@ -12,7 +7,7 @@ class User(object):
     def __init__(self, user_id, username, first_name, last_name, display_name, profile_picture_url,
                  about, date_joined, is_group, is_active):
         """
-        Initialize a new User
+        Initialize a new user
         :param user_id:
         :param username:
         :param first_name:
@@ -41,12 +36,12 @@ class User(object):
     @classmethod
     def from_json(cls, json, is_profile=False):
         """
-        Init a new user in DB
+        init a new user form JSON
         :param json:
         :param is_profile:
         :return:
         """
-        parser = UserJson(json, is_profile=is_profile)
+        parser = JSONSchema.user(json, is_profile=is_profile)
 
         date_joined_timestamp = string_to_timestamp(parser.get_date_created())
 
@@ -62,78 +57,6 @@ class User(object):
                    is_active=parser.get_is_active())
 
     def __str__(self):
-        return f'id: {self.id}, username: {self.username}, firstname: {self.first_name}, lastname: {self.last_name}' +\
-            f' display_name: {self.display_name}, picture: {self.profile_picture_url}, about: {self.about},' \
+        return f'id: {self.id}, username: {self.username}, firstname: {self.first_name}, lastname: {self.last_name}'\
+            f' display_name: {self.display_name}, picture: {self.profile_picture_url}, about: {self.about},'\
             f' joined: {self.date_joined}, is_group: {self.is_group}, is_active: {self.is_active}'
-
-
-class UserJson:
-
-    def __init__(self, json, is_profile=False):
-        self.json = json
-        self.is_profile = is_profile
-
-        if is_profile:
-            self.parser = profile_json_format
-        else:
-            self.parser = user_json_format
-
-    def get_user_id(self):
-        return self.json[self.parser.get('user_id')]
-
-    def get_username(self):
-        return self.json[self.parser.get('username')]
-
-    def get_first_name(self):
-        return self.json[self.parser.get('first_name')]
-
-    def get_last_name(self):
-        return self.json[self.parser.get('last_name')]
-
-    def get_full_name(self):
-        return self.json[self.parser.get('full_name')]
-
-    def get_picture_url(self):
-        return self.json[self.parser.get('picture_url')]
-
-    def get_about(self):
-        return self.json[self.parser.get('about')]
-
-    def get_date_created(self):
-        return self.json[self.parser.get('date_created')]
-
-    def get_is_group(self):
-        if self.is_profile:
-            return False
-        return self.json[self.parser.get('is_group')]
-
-    def get_is_active(self):
-        if self.is_profile:
-            return False
-        return self.json[self.parser.get('is_active')]
-
-
-user_json_format = {
-    'user_id': 'id',
-    'username': 'username',
-    'first_name': 'first_name',
-    'last_name': 'last_name',
-    'full_name': 'display_name',
-    'picture_url': 'profile_picture_url',
-    'about': 'about',
-    'date_created': 'date_joined',
-    'is_group': 'is_group',
-    'is_active': 'is_active'
-}
-
-profile_json_format = {
-    'user_id': 'external_id',
-    'username': 'username',
-    'first_name': 'firstname',
-    'last_name': 'lastname',
-    'full_name': 'name',
-    'picture_url': 'picture',
-    'about': 'about',
-    'date_created': 'date_created',
-    'is_business': 'is_business'
-}

@@ -1,8 +1,9 @@
-from typing import List, Union
 from models.user import User
 from models.transaction import Transaction
 from models.exception import InvalidArgumentError, ArgumentMissingError
 from utils import deserialize, wrap_callback
+from threading import Thread
+from typing import List, Union
 
 
 class UserApi(object):
@@ -11,7 +12,7 @@ class UserApi(object):
         self.__api_client = api_client
 
     def search_for_users(self, query: str, callback=None,
-                         page: int = 1, count: int = 50) -> List[User]:
+                         page: int = 1, count: int = 50) -> Union[List[User], Thread]:
         """
         :param query: <str>
         :param callback: <function>
@@ -33,17 +34,17 @@ class UserApi(object):
 
         response = self.__api_client.call_api(resource_path=resource_path, params=params,
                                               method='GET', callback=wrapped_callback)
-
+        # return the Thread
         if callback:
-            return []
+            return response
 
         return deserialize(response=response, data_type=User)
 
-    def get_user_profile(self, user_id: str, callback=None) -> Union[User, None]:
+    def get_profile(self, user_id: str, callback=None) -> Union[User, Thread, None]:
         """
         :param user_id: <str>, example: '2859950549165568970'
         :param callback: <function>
-        :return user: <User>
+        :return user: <User> <Thread> <NoneType>
         """
 
         # Prepare the request
@@ -54,7 +55,7 @@ class UserApi(object):
         response = self.__api_client.call_api(resource_path=resource_path,
                                               method='GET',
                                               callback=wrapped_callback)
-        # Return the thread or process the response
+        # Return the thread
         if callback:
             return response
 
@@ -64,7 +65,7 @@ class UserApi(object):
                               user_id: str = None,
                               callback=None,
                               page: int = 1,
-                              count: int = 1337) -> Union[User, None]:
+                              count: int = 1337) -> Union[User, Thread, None]:
         """
 
         :return users_list: <list> A list of <User> objects or empty
@@ -86,16 +87,16 @@ class UserApi(object):
         response = self.__api_client.call_api(resource_path=resource_path,
                                               method='GET', params=params,
                                               callback=wrapped_callback)
-        # Return or process the response
+        # Return the Thread
         if callback:
-            return
+            return response
 
         return deserialize(response=response, data_type=User)
 
     def get_user_transactions(self, user: User = None, user_id: str = None,
                               callback=None,
                               page: int = 1,
-                              count: int = 50) -> Union[Transaction, None]:
+                              count: int = 50) -> Union[Transaction, Thread, None]:
 
         user_id = user_id or user.id
 
@@ -115,9 +116,9 @@ class UserApi(object):
         response = self.__api_client.call_api(resource_path=resource_path,
                                               method='GET', params=params,
                                               callback=wrapped_callback)
-        # Return or process the response
+        # Return the Thread
         if callback:
-            return
+            return response
 
         return deserialize(response=response, data_type=Transaction)
 
@@ -127,7 +128,7 @@ class UserApi(object):
                                           user_id_two: str = None,
                                           callback=None,
                                           page: int = 1,
-                                          count: int = 50) -> Union[Transaction, None]:
+                                          count: int = 50) -> Union[Transaction, Thread, None]:
 
         user_id_one = user_id_one or user_one.id
         user_id_two = user_id_two or user_two.id
@@ -150,13 +151,14 @@ class UserApi(object):
         response = self.__api_client.call_api(resource_path=resource_path,
                                               method='GET', params=params,
                                               callback=wrapped_callback)
-        # Return or process the response
+        # Return the Thread
         if callback:
-            return
+            return response
 
         return deserialize(response=response, data_type=Transaction)
 
-    def __prepare_offset_limit_params(self, page_number, max_number_per_page, max_offset, count):
+    @staticmethod
+    def __prepare_offset_limit_params(page_number, max_number_per_page, max_offset, count):
         """Get the offset for going to that page."""
         max_page = max_offset//max_number_per_page + 1
         if page_number == 0 or page_number > max_page:

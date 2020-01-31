@@ -1,5 +1,6 @@
 from typing import Dict
 from enum import Enum
+from utils.json_schema import JSONSchema
 
 
 class PaymentMethod(object):
@@ -13,10 +14,13 @@ class PaymentMethod(object):
 
     @classmethod
     def from_json(cls, json: Dict):
-        pid = json.get(p_format['id'])
-        p_role = json.get(p_format['payment_role'])
-        p_name = json.get(p_format['name'])
-        p_type = json.get(p_format['type'])
+
+        payment_parser = JSONSchema.payment_method(json)
+
+        pid = payment_parser.get_id()
+        p_role = payment_parser.get_payment_method_role()
+        p_name = payment_parser.get_payment_method_name()
+        p_type = payment_parser.get_payment_method_type()
 
         # Get the class for this payment, must be either VenmoBalance or BankAccount
         payment_class = payment_type[p_type]
@@ -27,7 +31,7 @@ class PaymentMethod(object):
                              p_type=p_type)
 
     def __str__(self):
-        return f"id: {self.id}, payment_role: {self.role}, payment_name: {self.name}, type: {self.type}"
+        return f"id: {self.id}, payment_method_role: {self.role}, payment_method_name: {self.name}, type: {self.type}"
 
 
 class VenmoBalance(PaymentMethod):
@@ -54,8 +58,3 @@ class PaymentPrivacy(Enum):
 
 
 payment_type = {'bank': BankAccount, 'balance': VenmoBalance}
-
-p_format = {'id': 'id',
-            'payment_role': 'peer_payment_role',
-            'name': 'name',
-            'type': 'type'}

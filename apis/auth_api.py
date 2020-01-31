@@ -1,6 +1,6 @@
 from utils import random_device_id, warn, confirm
 from models.exception import AuthenticationFailedError
-from api_client import ApiClient
+from utils.api_client import ApiClient
 
 
 class AuthenticationApi(object):
@@ -82,7 +82,8 @@ class AuthenticationApi(object):
 
         return response
 
-    def __ask_user_for_otp_password(self):
+    @staticmethod
+    def __ask_user_for_otp_password():
 
         otp = ""
         while len(otp) < 6 or not otp.isdigit():

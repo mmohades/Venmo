@@ -1,8 +1,9 @@
-from api_client import ApiClient
+from utils.api_client import ApiClient
 from models import User, PaymentMethod, PaymentRole, PaymentPrivacy
 from models.exception import ArgumentMissingError, NoPaymentMethodFoundError
 from utils import deserialize, wrap_callback
-from typing import List
+from threading import Thread
+from typing import List, Union
 
 
 class PaymentApi(object):
@@ -11,7 +12,7 @@ class PaymentApi(object):
         super().__init__()
         self.__api_client = api_client
 
-    def get_payment_methods(self, callback=None) -> List[PaymentMethod]:
+    def get_payment_methods(self, callback=None) -> Union[List[PaymentMethod], Thread]:
 
         wrapped_callback = wrap_callback(callback=callback,
                                          data_type=PaymentMethod)
@@ -31,7 +32,7 @@ class PaymentApi(object):
                    funding_source_id: str = None,
                    privacy_setting: str = PaymentPrivacy.private.value,
                    target_user_id: int = None, target_user: User = None,
-                   callback=None) -> bool:
+                   callback=None) -> Union[bool, Thread]:
         """
         :param amount: <float>
         :param note: <str>
@@ -39,7 +40,7 @@ class PaymentApi(object):
         :param privacy_setting: <str> private/friends/public
         :param target_user_id: <str>
         :param target_user: <User>
-        :param callback: <function>
+        :param callback: <function> Passing callback will run it in a distinct thread, and returns Thread
         :return: <bool> Either the transaction was successful or an exception will rise.
         """
 
@@ -56,9 +57,9 @@ class PaymentApi(object):
                       note: str,
                       privacy_setting: str = PaymentPrivacy.private.value,
                       target_user_id: int = None, target_user: User = None,
-                      callback=None) -> bool:
+                      callback=None) -> Union[bool, Thread]:
         """
-
+        Request money from a user.
         :param amount: <float> amount of money to be requested
         :param note: <str> message/note of the transaction
         :param privacy_setting: <str> private/friends/public (enum)
@@ -82,7 +83,7 @@ class PaymentApi(object):
                                 funding_source_id: str = None,
                                 privacy_setting: str = PaymentPrivacy.private.value,
                                 target_user_id: int = None, target_user: User = None,
-                                callback=None):
+                                callback=None) -> Union[bool, Thread]:
         """
         Generic method for sending and requesting money
         :param amount:
@@ -103,9 +104,6 @@ class PaymentApi(object):
             amount = -amount
 
         body = {
-            "metadata": {
-                "quasi_cash_disclaimer_viewed": False
-            },
             "user_id": target_user_id,
             "audience": privacy_setting,
             "amount": amount,
