@@ -1,7 +1,7 @@
-from utils import string_to_timestamp
-from models.user import User
-from utils import get_phone_model_from_json
-from utils.json_schema import JSONSchema
+from venmo_api import string_to_timestamp
+from venmo_api import User
+from venmo_api import get_phone_model_from_json
+from venmo_api import JSONSchema
 
 
 class Transaction(object):

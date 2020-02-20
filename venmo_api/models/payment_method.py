@@ -1,6 +1,6 @@
 from typing import Dict
 from enum import Enum
-from utils.json_schema import JSONSchema
+from venmo_api import JSONSchema
 
 
 class PaymentMethod(object):

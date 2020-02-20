@@ -1,7 +1,7 @@
-from models.user import User
-from models.transaction import Transaction
-from models.exception import InvalidArgumentError, ArgumentMissingError
-from utils import deserialize, wrap_callback
+from venmo_api import User
+from venmo_api import Transaction
+from venmo_api import InvalidArgumentError, ArgumentMissingError
+from venmo_api import deserialize, wrap_callback
 from threading import Thread
 from typing import List, Union
 

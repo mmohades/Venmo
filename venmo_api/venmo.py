@@ -1,8 +1,7 @@
-from utils.api_client import ApiClient
-from apis import *
+from venmo_api import ApiClient, UserApi, PaymentApi, AuthenticationApi
 
 
-class VenmoApi(object):
+class Client(object):
 
     def __init__(self, access_token: str):
         """

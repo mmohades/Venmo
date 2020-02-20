@@ -1,8 +1,8 @@
-import requests
-import threading
 from json import JSONDecodeError
 from typing import List
-from models.exception import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
+from venmo_api import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
+import requests
+import threading
 
 
 class ApiClient(object):

@@ -10,7 +10,11 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
+
+
+### Other ###
 tests.py
+venmo_api/test.py
 
 ### Linux ###
 *~
@@ -124,6 +128,7 @@ fabric.properties
 # C extensions
 *.so
 
+
 # Distribution / packaging
 .Python
 env/
@@ -142,6 +147,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

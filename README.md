@@ -4,17 +4,35 @@
 
 This is a wrapper for the Venmo API. This library provides a Python interface for the Venmo API. It's compatible with Python versions 3.6+.
 
-## Usage
+## Installing
+
+You can install or upgrade venmo-api with:
+
+```bash
+$ pip3 install venmo-api --upgrade
+```
+
+Or you can install it from the source:
+
+```bash
+$ git clone https://github.com/mmohades/Venmo.git --recursive
+$ cd Venmo
+$ python3 setup.py install
+```
+
+## Getting Started
+
+### Usage
 
 In short, you can send money, request for money, get a user's public transactions, get a user's public profile info, etc. The following is an example of initializing and working with it.
 
  ```python
-from Venmo import VenmoApi
+from venmo_api import Client
 
 # Get your access token. You will need to complete the 2FA process
-access_token = VenmoApi.get_access_token(username='myemail@random.com',
+access_token = Client.get_access_token(username='myemail@random.com',
                                           password='your password')
-venmo_api = VenmoApi(access_token=access_token)
+venmo = Client(access_token=access_token)
 
 # Search for users. You get 50 results per page.
 users = venmo.user.search_for_users(query="Peter",
@@ -32,6 +50,19 @@ venmo.user.search_for_users(query="peter",
                              count=10)
 
  ```
+Just keep this in mind that your access token almost never expires! You will need to revoke it by yoursef.
+
+```Python
+venmo.log_out("Bearer a40fsdfhsfhdsfjhdkgljsdglkdsfj3j3i4349t34j7d")
+```
+
+```python
+# Request money
+venmo.payment.request_money(32.5, "house expenses", "1122334455667")
+```
+
+
+
 Getting a user's public transactions
 
 ```python
@@ -45,19 +76,14 @@ venmo_api.user.get_user_transactions(user_id='0000000000000',
 ```
 
 
-## Getting Started
-
-### Installation
-
-
 
 ### Documentation
 
-
+`venmo-api`'s documentation lives at [readthedocs.io](https://venmo.readthedocs.io/en/latest/).
 
 ## Contributing
 
-Contributions of all sizes are welcome. You can also help by [reporting bugs](https://github.com/mmohades/VenmoApi/issues/new).
+Contributions of all sizes are welcome. You can help with the wrapper documentation located in /docs. You can also help by [reporting bugs](https://github.com/mmohades/VenmoApi/issues/new). You can add more routes to both  [Venmo Unofficial API Documentation](https://github.com/mmohades/VenmoApiDocumentation) and the `venmo-api` wrapper. 
 
 ## Venmo Unofficial API Documentation
 

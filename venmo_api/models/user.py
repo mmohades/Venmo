@@ -1,5 +1,5 @@
-from utils import string_to_timestamp
-from utils.json_schema import JSONSchema
+from venmo_api import string_to_timestamp
+from venmo_api import JSONSchema
 
 
 class User(object):

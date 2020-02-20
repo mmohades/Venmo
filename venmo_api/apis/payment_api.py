@@ -1,7 +1,7 @@
-from utils.api_client import ApiClient
-from models import User, PaymentMethod, PaymentRole, PaymentPrivacy
-from models.exception import ArgumentMissingError, NoPaymentMethodFoundError
-from utils import deserialize, wrap_callback
+from venmo_api import ApiClient
+from venmo_api import User, PaymentMethod, PaymentRole, PaymentPrivacy
+from venmo_api import ArgumentMissingError, NoPaymentMethodFoundError
+from venmo_api import deserialize, wrap_callback
 from threading import Thread
 from typing import List, Union
 
@@ -55,8 +55,8 @@ class PaymentApi(object):
 
     def request_money(self, amount: float,
                       note: str,
-                      privacy_setting: str = PaymentPrivacy.private.value,
                       target_user_id: int = None, target_user: User = None,
+                      privacy_setting: str = PaymentPrivacy.private.value,
                       callback=None) -> Union[bool, Thread]:
         """
         Request money from a user.
