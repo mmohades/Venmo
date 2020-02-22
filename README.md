@@ -31,7 +31,7 @@ from venmo_api import Client
 
 # Get your access token. You will need to complete the 2FA process
 access_token = Client.get_access_token(username='myemail@random.com',
-                                          password='your password')
+                                        password='your password')
 venmo = Client(access_token=access_token)
 
 # Search for users. You get 50 results per page.
@@ -50,7 +50,7 @@ venmo.user.search_for_users(query="peter",
                              count=10)
 
  ```
-Just keep this in mind that your access token almost never expires! You will need to revoke it by yoursef.
+Keep this in mind that your access token never expires! You will need to revoke it by yoursef.
 
 ```Python
 venmo.log_out("Bearer a40fsdfhsfhdsfjhdkgljsdglkdsfj3j3i4349t34j7d")
@@ -61,16 +61,21 @@ venmo.log_out("Bearer a40fsdfhsfhdsfjhdkgljsdglkdsfj3j3i4349t34j7d")
 venmo.payment.request_money(32.5, "house expenses", "1122334455667")
 ```
 
+```python
+# Send money
+venmo.payment.send_money(13.68, "thanks for the 🍔", "1122334455667")
+```
 
 
-Getting a user's public transactions
+
+Getting a user's transactions (public, friends and privates that happen between your account and user_id account)
 
 ```python
 def callback(transactions_list):
     for transaction in transactions_list:
         print(transaction)
 
-# callback is optional
+# callback is optional. Max number of transactions per request is 50.
 venmo_api.user.get_user_transactions(user_id='0000000000000',
                                      callback=callback) 
 ```

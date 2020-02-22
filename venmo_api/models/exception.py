@@ -61,7 +61,7 @@ class ArgumentMissingError(Exception):
     """Raised when there is an argument missing in a function"""
 
     def __init__(self, msg: str = None, arguments: tuple = None, reason=None):
-        self.msg = msg or f"One of f{arguments} must be passed to this method." + (reason or "")
+        self.msg = msg or f"One of {arguments} must be passed to this method." + (reason or "")
         super(ArgumentMissingError, self).__init__(self.msg)
 
 

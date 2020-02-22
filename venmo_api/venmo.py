@@ -1,4 +1,4 @@
-from venmo_api import ApiClient, UserApi, PaymentApi, AuthenticationApi
+from venmo_api import ApiClient, UserApi, PaymentApi, AuthenticationApi, validate_access_token
 
 
 class Client(object):
@@ -9,10 +9,22 @@ class Client(object):
         :param access_token: <str> Need access_token to work with the API.
         """
         super().__init__()
-        self.__access_token = access_token
+        self.__access_token = validate_access_token(access_token=access_token)
         self.__api_client = ApiClient(access_token=access_token)
         self.user = UserApi(self.__api_client)
         self.payment = PaymentApi(self.__api_client)
+        self.__profile = None
+
+    def my_profile(self, force_update=False):
+        """
+        Get your profile info. It can be cached from the prev time.
+        :return:
+        """
+        if self.__profile and not force_update:
+            return self.__profile
+
+        self.__profile = self.user.get_my_profile()
+        return self.__profile
 
     @staticmethod
     def get_access_token(username: str, password: str, device_id: str = None) -> str:
@@ -34,4 +46,5 @@ class Client(object):
         :param access_token:
         :return: <bool>
         """
+        access_token = validate_access_token(access_token=access_token)
         return AuthenticationApi.log_out(access_token=access_token)

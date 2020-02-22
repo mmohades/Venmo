@@ -1,8 +1,7 @@
 from venmo_api import ApiClient
 from venmo_api import User, PaymentMethod, PaymentRole, PaymentPrivacy
-from venmo_api import ArgumentMissingError, NoPaymentMethodFoundError
-from venmo_api import deserialize, wrap_callback
-from threading import Thread
+from venmo_api import NoPaymentMethodFoundError
+from venmo_api import deserialize, wrap_callback, get_user_id
 from typing import List, Union
 
 
@@ -12,7 +11,12 @@ class PaymentApi(object):
         super().__init__()
         self.__api_client = api_client
 
-    def get_payment_methods(self, callback=None) -> Union[List[PaymentMethod], Thread]:
+    def get_payment_methods(self, callback=None) -> Union[List[PaymentMethod], None]:
+        """
+        Get a list of available payment_methods
+        :param callback:
+        :return:
+        """
 
         wrapped_callback = wrap_callback(callback=callback,
                                          data_type=PaymentMethod)
@@ -23,17 +27,20 @@ class PaymentApi(object):
                                               callback=wrapped_callback)
         # return the thread
         if callback:
-            return response
+            return
 
         return deserialize(response=response, data_type=PaymentMethod)
 
     def send_money(self, amount: float,
                    note: str,
+                   target_user_id: int = None,
                    funding_source_id: str = None,
+                   target_user: User = None,
                    privacy_setting: str = PaymentPrivacy.private.value,
-                   target_user_id: int = None, target_user: User = None,
-                   callback=None) -> Union[bool, Thread]:
+                   callback=None) -> Union[bool, None]:
         """
+        send [amount] money with [note] to the ([target_user_id] or [target_user]) from the [funding_source_id]
+        If no [funding_source_id] is provided, it will find the default source_id and uses that.
         :param amount: <float>
         :param note: <str>
         :param funding_source_id: <str> Your payment_method id for this payment
@@ -55,11 +62,12 @@ class PaymentApi(object):
 
     def request_money(self, amount: float,
                       note: str,
-                      target_user_id: int = None, target_user: User = None,
+                      target_user_id: int = None,
                       privacy_setting: str = PaymentPrivacy.private.value,
-                      callback=None) -> Union[bool, Thread]:
+                      target_user: User = None,
+                      callback=None) -> Union[bool, None]:
         """
-        Request money from a user.
+        Request [amount] money with [note] from the ([target_user_id] or [target_user])
         :param amount: <float> amount of money to be requested
         :param note: <str> message/note of the transaction
         :param privacy_setting: <str> private/friends/public (enum)
@@ -83,7 +91,7 @@ class PaymentApi(object):
                                 funding_source_id: str = None,
                                 privacy_setting: str = PaymentPrivacy.private.value,
                                 target_user_id: int = None, target_user: User = None,
-                                callback=None) -> Union[bool, Thread]:
+                                callback=None) -> Union[bool, None]:
         """
         Generic method for sending and requesting money
         :param amount:
@@ -96,8 +104,7 @@ class PaymentApi(object):
         :param callback:
         :return:
         """
-        if not target_user and not target_user_id:
-            raise ArgumentMissingError(arguments=('target_user_id', 'target_user'))
+        target_user_id = get_user_id(target_user, target_user_id)
 
         amount = abs(amount)
         if not is_send_money:
@@ -125,7 +132,7 @@ class PaymentApi(object):
                                               body=body,
                                               callback=wrapped_callback)
         if callback:
-            return threaded
+            return
         # if no exception raises, then it was successful
         return True
 

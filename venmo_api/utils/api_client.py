@@ -1,6 +1,6 @@
 from json import JSONDecodeError
 from typing import List
-from venmo_api import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError
+from venmo_api import ResourceNotFoundError, InvalidHttpMethodError, HttpCodeError, validate_access_token
 import requests
 import threading
 
@@ -16,7 +16,7 @@ class ApiClient(object):
         """
         super().__init__()
 
-        access_token = self.__validate_access_token(access_token)
+        access_token = validate_access_token(access_token=access_token)
 
         self.access_token = access_token
         self.configuration = {"host": "https://api.venmo.com/v1"}
@@ -29,7 +29,7 @@ class ApiClient(object):
         self.session.headers.update(self.default_headers)
 
     def update_access_token(self, access_token):
-        self.access_token = self.__validate_access_token(access_token=access_token)
+        self.access_token = validate_access_token(access_token=access_token)
         self.default_headers.update({"Authorization": self.access_token})
         self.session.headers.update({"Authorization": self.access_token})
 
@@ -168,18 +168,3 @@ class ApiClient(object):
                 return built_response
 
             raise HttpCodeError(response=response)
-
-    @staticmethod
-    def __validate_access_token(access_token):
-        """
-        Validate the access_token
-        :param access_token:
-        :return:
-        """
-        if not access_token:
-            return
-
-        if access_token[:6] != 'Bearer':
-            return f"Barear {access_token}"
-
-        return access_token

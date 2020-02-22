@@ -125,6 +125,7 @@ class AuthenticationApi(object):
         :param access_token: <str>
         :return:
         """
+
         resource_path = '/oauth/access_token'
         api_client = ApiClient(access_token=access_token)
 
