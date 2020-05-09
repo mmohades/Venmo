@@ -92,7 +92,7 @@ def warn(message):
     :param message:
     :return:
     """
-    print(Colors.WARNING + message + Colors.ENDC)
+    print(Colors.WARNING.value + message + Colors.ENDC.value)
 
 
 def confirm(message):
@@ -101,7 +101,7 @@ def confirm(message):
     :param message:
     :return:
     """
-    print(Colors.OKBLUE + message + Colors.ENDC)
+    print(Colors.OKBLUE.value + message + Colors.ENDC.value)
 
 
 def get_user_id(user, user_id):

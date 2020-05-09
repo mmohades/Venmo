@@ -104,7 +104,7 @@ class PaymentApi(object):
         :param callback:
         :return:
         """
-        target_user_id = get_user_id(target_user, target_user_id)
+        target_user_id = str(get_user_id(target_user, target_user_id))
 
         amount = abs(amount)
         if not is_send_money:

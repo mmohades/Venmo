@@ -26,7 +26,7 @@ class AuthenticationApi(object):
 
         header_params = {'device-id': self.__device_id,
                          'Content-Type': 'application/json',
-                         'Host': 'api.venmo_api.com'
+                         'Host': 'api.venmo.com'
                          }
 
         body = {"phone_email_or_username": username,
@@ -51,7 +51,11 @@ class AuthenticationApi(object):
 
     def __two_factor_process(self, response):
 
-        otp_secret = response['headers']['venmo_api-otp-secret']
+        otp_secret = response['headers'].get('venmo-otp-secret')
+        if not otp_secret:
+            raise AuthenticationFailedError("Failed to get the otp-secret for the 2-factor authentication process. "
+                                            "(check your password)")
+
         self.__send_text_otp(otp_secret=otp_secret)
         user_otp = self.__ask_user_for_otp_password()
 
@@ -64,7 +68,7 @@ class AuthenticationApi(object):
 
         header_params = {'device-id': self.__device_id,
                          'Content-Type': 'application/json',
-                         'venmo_api-otp-secret': otp_secret
+                         'venmo-otp-secret': otp_secret
                          }
         body = {"via": "sms"}
         resource_path = '/account/two-factor/token'
@@ -94,8 +98,8 @@ class AuthenticationApi(object):
     def __login_using_otp(self, user_otp, otp_secret):
 
         header_params = {'device-id': self.__device_id,
-                         'venmo_api-otp': user_otp,
-                         'venmo_api-otp-secret': otp_secret
+                         'venmo-otp': user_otp,
+                         'venmo-otp-secret': otp_secret
                          }
         params = {'client_id': 1}
         resource_path = '/oauth/access_token'
