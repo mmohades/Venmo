@@ -72,7 +72,14 @@ def __get_objs_from_json_list(json_list, data_type):
     :param data_type: <class> Either User/Transaction
     :return: <list> a list of <User>
     """
-    return [data_type.from_json(obj) for obj in json_list]
+    result = []
+    for obj in json_list:
+        data_obj = data_type.from_json(obj)
+        if not data_obj:
+            continue
+        result.append(data_obj)
+
+    return result
 
 
 class Colors(Enum):

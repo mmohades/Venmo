@@ -32,6 +32,10 @@ class Transaction(object):
     @classmethod
     def from_json(cls, json):
 
+        # Skip money transfers to/from bank accounts
+        if json.get("transfer"):
+            return None
+
         parser = JSONSchema.transaction(json)
         date_created = string_to_timestamp(parser.get_date_created())
         date_updated = string_to_timestamp(parser.get_date_updated())
