@@ -41,6 +41,9 @@ class User(object):
         :param is_profile:
         :return:
         """
+        if not json:
+            return
+
         parser = JSONSchema.user(json, is_profile=is_profile)
 
         date_joined_timestamp = string_to_timestamp(parser.get_date_created())

@@ -17,50 +17,56 @@ class JSONSchema:
 class TransactionParser:
 
     def __init__(self, json):
+        if not json:
+            return
+
         self.json = json
-        self.payment = json[transaction_json_format['payment']]
+        self.payment = json.get(transaction_json_format['payment'])
 
     def get_story_id(self):
-        return self.json[transaction_json_format['story_id']]
+        return self.json.get(transaction_json_format['story_id'])
 
     def get_date_created(self):
-        return self.json[transaction_json_format['date_created']]
+        return self.json.get(transaction_json_format['date_created'])
 
     def get_date_updated(self):
-        return self.json[transaction_json_format['date_updated']]
+        return self.json.get(transaction_json_format['date_updated'])
 
     def get_actor_app(self):
-        return self.json[transaction_json_format['app']]
+        return self.json.get(transaction_json_format['app'])
 
     def get_audience(self):
-        return self.json[transaction_json_format['aud']]
+        return self.json.get(transaction_json_format['aud'])
 
     def get_likes(self):
-        return self.json[transaction_json_format['likes']]
+        return self.json.get(transaction_json_format['likes'])
 
     def get_comments(self):
-        return self.json[transaction_json_format['comments']]
+        return self.json.get(transaction_json_format['comments'])
+
+    def get_transaction_type(self):
+        return self.json.get(transaction_json_format['transaction_type'])
 
     def get_payment_id(self):
-        return self.payment[payment_json_format['payment_id']]
+        return self.payment.get(payment_json_format['payment_id'])
 
     def get_type(self):
-        return self.payment[payment_json_format['type']]
+        return self.payment.get(payment_json_format['type'])
 
     def get_date_completed(self):
-        return self.payment[payment_json_format['date_completed']]
+        return self.payment.get(payment_json_format['date_completed'])
 
     def get_story_note(self):
-        return self.payment[payment_json_format['note']]
+        return self.payment.get(payment_json_format['note'])
 
     def get_actor(self):
-        return self.payment[payment_json_format['actor']]
+        return self.payment.get(payment_json_format['actor'])
 
     def get_target(self):
-        return self.payment[payment_json_format['target']]['user']
+        return self.payment.get(payment_json_format['target']).get('user')
 
     def get_status(self):
-        return self.payment[payment_json_format['status']]
+        return self.payment.get(payment_json_format['status'])
 
 
 transaction_json_format = {
@@ -72,7 +78,8 @@ transaction_json_format = {
     "app": "app",
     "payment": "payment",
     "comments": "comments",
-    "likes": "likes"
+    "likes": "likes",
+    "transaction_type": "type"
 }
 payment_json_format = {
     "status": "status",
@@ -81,13 +88,17 @@ payment_json_format = {
     "target": "target",
     "actor": "actor",
     "note": "note",
-    'type': 'action'
+    "type": "action"
 }
 
 
 class UserParser:
 
     def __init__(self, json, is_profile=False):
+
+        if not json:
+            return
+
         self.json = json
         self.is_profile = is_profile
 
@@ -97,38 +108,38 @@ class UserParser:
             self.parser = user_json_format
 
     def get_user_id(self):
-        return self.json[self.parser.get('user_id')]
+        return self.json.get(self.parser.get('user_id'))
 
     def get_username(self):
-        return self.json[self.parser.get('username')]
+        return self.json.get(self.parser.get('username'))
 
     def get_first_name(self):
-        return self.json[self.parser.get('first_name')]
+        return self.json.get(self.parser.get('first_name'))
 
     def get_last_name(self):
-        return self.json[self.parser.get('last_name')]
+        return self.json.get(self.parser.get('last_name'))
 
     def get_full_name(self):
-        return self.json[self.parser.get('full_name')]
+        return self.json.get(self.parser.get('full_name'))
 
     def get_picture_url(self):
-        return self.json[self.parser.get('picture_url')]
+        return self.json.get(self.parser.get('picture_url'))
 
     def get_about(self):
-        return self.json[self.parser.get('about')]
+        return self.json.get(self.parser.get('about'))
 
     def get_date_created(self):
-        return self.json[self.parser.get('date_created')]
+        return self.json.get(self.parser.get('date_created'))
 
     def get_is_group(self):
         if self.is_profile:
             return False
-        return self.json[self.parser.get('is_group')]
+        return self.json.get(self.parser.get('is_group'))
 
     def get_is_active(self):
         if self.is_profile:
             return False
-        return self.json[self.parser.get('is_active')]
+        return self.json.get(self.parser.get('is_active'))
 
 
 user_json_format = {

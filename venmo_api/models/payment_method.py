@@ -45,16 +45,15 @@ class BankAccount(PaymentMethod):
 
 
 class PaymentRole(Enum):
-    default = 'default'
-    backup = 'backup'
-    none = 'none'
+    DEFAULT = 'default'
+    BACKUP = 'backup'
+    NONE = 'none'
 
 
 class PaymentPrivacy(Enum):
-
-    private = 'private'
-    public = 'public'
-    friends = 'friends'
+    PRIVATE = 'private'
+    PUBLIC = 'public'
+    FRIENDS = 'friends'
 
 
 payment_type = {'bank': BankAccount, 'balance': VenmoBalance}
