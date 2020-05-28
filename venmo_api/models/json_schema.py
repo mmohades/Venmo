@@ -62,6 +62,8 @@ class TransactionParser:
     def get_status(self):
         return self.payment[payment_json_format['status']]
 
+    def get_amount(self):
+        return self.payment[payment_json_format['amount']]
 
 transaction_json_format = {
     "story_id": "id",
@@ -81,7 +83,8 @@ payment_json_format = {
     "target": "target",
     "actor": "actor",
     "note": "note",
-    'type': 'action'
+    'type': 'action',
+    'amount': 'amount'
 }
 
 
