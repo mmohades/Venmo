@@ -8,7 +8,7 @@ from venmo_api import JSONSchema
 class Transaction(object):
 
     def __init__(self, story_id, payment_id, date_completed, date_created,
-                 date_updated, payment_type, audience, status,
+                 date_updated, payment_type, amount, audience, status,
                  note, device_used, actor, target):
 
         super().__init__()
@@ -21,6 +21,7 @@ class Transaction(object):
         self.date_updated = date_updated
 
         self.payment_type = payment_type
+        self.amount = amount
         self.audience = audience
         self.status = status
 
@@ -62,6 +63,7 @@ class Transaction(object):
                    date_created=date_created,
                    date_updated=date_updated,
                    payment_type=parser.get_type(),
+                   amount=parser.get_amount(),
                    audience=parser.get_audience(),
                    note=parser.get_story_note(),
                    status=parser.get_status(),
@@ -73,7 +75,7 @@ class Transaction(object):
 
         return f'story_id: {self.id}, payment_id: {self.payment_id}, date_completed: {self.date_completed},' \
             f'date_created: {self.date_created}, date_updated: {self.date_updated},' \
-            f' payment_type: {self.payment_type},' \
+            f'payment_type: {self.payment_type}, amount: {self.amount},' \
             f'audience: {self.audience}, status: {self.status}, note: {self.note}, device_used: {self.device_used},\n' \
             f'actor_user: {self.actor},\n' \
             f'target_user: {self.target}\n'

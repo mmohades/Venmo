@@ -68,6 +68,8 @@ class TransactionParser:
     def get_status(self):
         return self.payment.get(payment_json_format['status'])
 
+    def get_amount(self):
+        return self.payment.get(payment_json_format['amount'])
 
 transaction_json_format = {
     "story_id": "id",
@@ -88,7 +90,8 @@ payment_json_format = {
     "target": "target",
     "actor": "actor",
     "note": "note",
-    "type": "action"
+    'type': 'action',
+    'amount': 'amount'
 }
 
 
@@ -122,6 +125,9 @@ class UserParser:
     def get_full_name(self):
         return self.json.get(self.parser.get('full_name'))
 
+    def get_phone(self):
+        return self.json.get(self.parser.get('phone'))
+
     def get_picture_url(self):
         return self.json.get(self.parser.get('picture_url'))
 
@@ -148,6 +154,7 @@ user_json_format = {
     'first_name': 'first_name',
     'last_name': 'last_name',
     'full_name': 'display_name',
+    'phone': 'phone',
     'picture_url': 'profile_picture_url',
     'about': 'about',
     'date_created': 'date_joined',
@@ -161,6 +168,7 @@ profile_json_format = {
     'first_name': 'firstname',
     'last_name': 'lastname',
     'full_name': 'name',
+    'phone': 'phone',
     'picture_url': 'picture',
     'about': 'about',
     'date_created': 'date_created',
