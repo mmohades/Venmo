@@ -4,8 +4,8 @@ from venmo_api import JSONSchema
 
 class User(object):
 
-    def __init__(self, user_id, username, first_name, last_name, display_name, profile_picture_url,
-                 about, date_joined, is_group, is_active):
+    def __init__(self, user_id, username, first_name, last_name, display_name, phone,
+                profile_picture_url, about, date_joined, is_group, is_active):
         """
         Initialize a new user
         :param user_id:
@@ -13,6 +13,7 @@ class User(object):
         :param first_name:
         :param last_name:
         :param display_name:
+        :param phone:
         :param profile_picture_url:
         :param about:
         :param date_joined:
@@ -27,6 +28,7 @@ class User(object):
         self.first_name = first_name
         self.last_name = last_name
         self.display_name = display_name
+        self.phone = phone
         self.profile_picture_url = profile_picture_url
         self.about = about
         self.date_joined = date_joined
@@ -53,6 +55,7 @@ class User(object):
                    first_name=parser.get_first_name(),
                    last_name=parser.get_last_name(),
                    display_name=parser.get_full_name(),
+                   phone=parser.get_phone(),
                    profile_picture_url=parser.get_picture_url(),
                    about=parser.get_about(),
                    date_joined=date_joined_timestamp,
@@ -61,5 +64,5 @@ class User(object):
 
     def __str__(self):
         return f'id: {self.id}, username: {self.username}, firstname: {self.first_name}, lastname: {self.last_name}'\
-            f' display_name: {self.display_name}, picture: {self.profile_picture_url}, about: {self.about},'\
+            f' display_name: {self.display_name}, phone: {self.phone}, picture: {self.profile_picture_url}, about: {self.about},'\
             f' joined: {self.date_joined}, is_group: {self.is_group}, is_active: {self.is_active}'
