@@ -36,7 +36,7 @@ class PaymentApi(object):
                    target_user_id: int = None,
                    funding_source_id: str = None,
                    target_user: User = None,
-                   privacy_setting: str = PaymentPrivacy.private.value,
+                   privacy_setting: PaymentPrivacy = PaymentPrivacy.PRIVATE,
                    callback=None) -> Union[bool, None]:
         """
         send [amount] money with [note] to the ([target_user_id] or [target_user]) from the [funding_source_id]
@@ -44,7 +44,7 @@ class PaymentApi(object):
         :param amount: <float>
         :param note: <str>
         :param funding_source_id: <str> Your payment_method id for this payment
-        :param privacy_setting: <str> private/friends/public
+        :param privacy_setting: <PaymentPrivacy> PRIVATE/FRIENDS/PUBLIC (enum)
         :param target_user_id: <str>
         :param target_user: <User>
         :param callback: <function> Passing callback will run it in a distinct thread, and returns Thread
@@ -55,7 +55,7 @@ class PaymentApi(object):
                                             note=note,
                                             is_send_money=True,
                                             funding_source_id=funding_source_id,
-                                            privacy_setting=privacy_setting,
+                                            privacy_setting=privacy_setting.value,
                                             target_user_id=target_user_id,
                                             target_user=target_user,
                                             callback=callback)
@@ -63,14 +63,14 @@ class PaymentApi(object):
     def request_money(self, amount: float,
                       note: str,
                       target_user_id: int = None,
-                      privacy_setting: str = PaymentPrivacy.private.value,
+                      privacy_setting: PaymentPrivacy = PaymentPrivacy.PRIVATE,
                       target_user: User = None,
                       callback=None) -> Union[bool, None]:
         """
         Request [amount] money with [note] from the ([target_user_id] or [target_user])
         :param amount: <float> amount of money to be requested
         :param note: <str> message/note of the transaction
-        :param privacy_setting: <str> private/friends/public (enum)
+        :param privacy_setting: <PaymentPrivacy> PRIVATE/FRIENDS/PUBLIC (enum)
         :param target_user_id: <str> the user id of the person you are asking the money from
         :param target_user: <User> The user object or user_id is required
         :param callback: callback function
@@ -80,7 +80,7 @@ class PaymentApi(object):
                                             note=note,
                                             is_send_money=False,
                                             funding_source_id=None,
-                                            privacy_setting=privacy_setting,
+                                            privacy_setting=privacy_setting.value,
                                             target_user_id=target_user_id,
                                             target_user=target_user,
                                             callback=callback)
@@ -89,7 +89,7 @@ class PaymentApi(object):
                                 note: str,
                                 is_send_money,
                                 funding_source_id: str = None,
-                                privacy_setting: str = PaymentPrivacy.private.value,
+                                privacy_setting: str = PaymentPrivacy.PRIVATE.value,
                                 target_user_id: int = None, target_user: User = None,
                                 callback=None) -> Union[bool, None]:
         """
@@ -127,10 +127,10 @@ class PaymentApi(object):
         wrapped_callback = wrap_callback(callback=callback,
                                          data_type=None)
 
-        threaded = self.__api_client.call_api(resource_path=resource_path,
-                                              method='POST',
-                                              body=body,
-                                              callback=wrapped_callback)
+        self.__api_client.call_api(resource_path=resource_path,
+                                   method='POST',
+                                   body=body,
+                                   callback=wrapped_callback)
         if callback:
             return
         # if no exception raises, then it was successful
@@ -144,7 +144,7 @@ class PaymentApi(object):
         payment_methods = self.get_payment_methods()
 
         for p_method in payment_methods:
-            if p_method.role == PaymentRole.default:
+            if p_method.role == PaymentRole.DEFAULT:
                 return p_method
 
         raise NoPaymentMethodFoundError()
