@@ -69,7 +69,7 @@ class TransactionParser:
         return self.payment.get(payment_json_format['status'])
 
     def get_amount(self):
-        return self.payment.get[payment_json_format['amount']]
+        return self.payment.get(payment_json_format['amount'])
 
 transaction_json_format = {
     "story_id": "id",
