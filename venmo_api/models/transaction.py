@@ -91,6 +91,7 @@ class TransactionType(Enum):
     TRANSFER = 'transfer'
     # add money to debit card
     TOP_UP = 'top_up'
-    # ?
+    # debit card purchase
     AUTHORIZATION = 'authorization'
+    # debit card atm withdrawal
     ATM_WITHDRAWAL = 'atm_withdrawal'
