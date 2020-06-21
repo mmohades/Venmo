@@ -85,7 +85,7 @@ class Transaction(object):
 
 class TransactionType(Enum):
     PAYMENT = 'payment'
-    # merchent refund
+    # merchant refund
     REFUND = 'refund'
     # to/from bank account
     TRANSFER = 'transfer'
