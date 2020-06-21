@@ -45,7 +45,6 @@ class Transaction(object):
 
         parser = JSONSchema.transaction(json)
 
-        # TODO: is this TransactionType necessary?
         transaction_type = TransactionType(parser.get_transaction_type())
 
         # Currently only handles Payment-type transactions
