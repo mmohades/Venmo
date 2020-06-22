@@ -46,8 +46,8 @@ class Transaction(object):
         parser = JSONSchema.transaction(json)
         transaction_type = TransactionType(parser.get_transaction_type())
 
-        # Skip money transfers to/from bank accounts and refunds
-        if transaction_type == TransactionType.REFUND or transaction_type == TransactionType.TRANSFER:
+        # Currently only handles Payment-type transactions
+        if transaction_type is not TransactionType.PAYMENT:
             return
 
         date_created = string_to_timestamp(parser.get_date_created())
@@ -83,5 +83,13 @@ class Transaction(object):
 
 class TransactionType(Enum):
     PAYMENT = 'payment'
+    # merchant refund
     REFUND = 'refund'
+    # to/from bank account
     TRANSFER = 'transfer'
+    # add money to debit card
+    TOP_UP = 'top_up'
+    # debit card purchase
+    AUTHORIZATION = 'authorization'
+    # debit card atm withdrawal
+    ATM_WITHDRAWAL = 'atm_withdrawal'
