@@ -31,7 +31,7 @@ class PaymentMethod(object):
                              p_type=p_type)
 
     def __str__(self):
-        return f"id: {self.id}, payment_method_role: {self.role}, payment_method_name: {self.name}, type: {self.type}"
+        return f"Payment: id: {self.id}, role: {self.role}, name: {self.name}, type: {self.type}"
 
 
 class VenmoBalance(PaymentMethod):

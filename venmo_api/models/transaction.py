@@ -73,7 +73,7 @@ class Transaction(object):
 
     def __str__(self):
 
-        return f'story_id: {self.id}, payment_id: {self.payment_id}, date_completed: {self.date_completed},' \
+        return f'Transaction: story_id: {self.id}, payment_id: {self.payment_id}, date_completed: {self.date_completed},' \
             f'date_created: {self.date_created}, date_updated: {self.date_updated},' \
             f'payment_type: {self.payment_type}, amount: {self.amount},' \
             f'audience: {self.audience}, status: {self.status}, note: {self.note}, device_used: {self.device_used},\n' \
