@@ -3,7 +3,7 @@
 """The setup script."""
 from setuptools import setup, find_packages
 
-with open('README.md') as readme_file:
+with open('README.md', encoding = "utf-8") as readme_file:
     readme = readme_file.read()
 
 
@@ -11,7 +11,7 @@ def requirements():
     """Build the requirements list for this project"""
     requirements_list = []
 
-    with open('requirements.txt') as requirements:
+    with open('requirements.txt',  encoding = "utf-8") as requirements:
         for install in requirements:
             requirements_list.append(install.strip())
 

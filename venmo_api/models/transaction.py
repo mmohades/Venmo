@@ -93,3 +93,6 @@ class TransactionType(Enum):
     AUTHORIZATION = 'authorization'
     # debit card atm withdrawal
     ATM_WITHDRAWAL = 'atm_withdrawal'
+
+    DISBURSEMENT = 'disbursement'
+
