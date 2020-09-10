@@ -37,7 +37,7 @@ class Client(object):
         :return: <str> access_token
         """
         authn_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
-        return authn_api.login_using_credentials(username=username, password=password)
+        return authn_api.login_with_credentials_cli(username=username, password=password)
 
     @staticmethod
     def log_out(access_token) -> bool:
