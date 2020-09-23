@@ -12,18 +12,18 @@ class Client(object):
         self.__access_token = validate_access_token(access_token=access_token)
         self.__api_client = ApiClient(access_token=access_token)
         self.user = UserApi(self.__api_client)
-        self.payment = PaymentApi(self.__api_client)
-        self.__profile = None
+        self.__profile = self.user.get_my_profile()
+        self.payment = PaymentApi(profile=self.__profile,
+                                  api_client=self.__api_client)
 
     def my_profile(self, force_update=False):
         """
         Get your profile info. It can be cached from the prev time.
         :return:
         """
-        if self.__profile and not force_update:
-            return self.__profile
+        if force_update:
+            self.__profile = self.user.get_my_profile(force_update=force_update)
 
-        self.__profile = self.user.get_my_profile()
         return self.__profile
 
     @staticmethod

@@ -13,8 +13,7 @@ media
 
 
 ### Other ###
-tests.py
-venmo_api/test.py
+test*.py
 
 ### Linux ###
 *~

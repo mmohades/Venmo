@@ -41,8 +41,8 @@ class HttpCodeError(Exception):
         except JSONDecodeError:
             json = "Invalid Json"
 
-        self.msg = msg or f"HTTP Status code invalid. Could not make the request -> "\
-            f"{status_code} {reason}.\nJSON: {json}"
+        self.msg = msg or f"HTTP Status code is invalid. Could not make the request because -> "\
+            f"{status_code} {reason}.\nError: {json}"
 
         super(HttpCodeError, self).__init__(self.msg)
 
@@ -73,6 +73,19 @@ class NoPaymentMethodFoundError(Exception):
         super(NoPaymentMethodFoundError, self).__init__(self.msg)
 
 
+class AlreadyRemindedPaymentError(Exception):
+    def __init__(self, payment_id: int):
+        self.msg = f"A reminder has already been sent to the recipient of this transaction: {payment_id}."
+        super(AlreadyRemindedPaymentError, self).__init__(self.msg)
+
+
+class NoPendingPaymentToUpdateError(Exception):
+    def __init__(self, payment_id: int, action: str):
+        self.msg = f"There is no *pending* transaction with the specified id: {payment_id}, to be {action}ed."
+        super(NoPendingPaymentToUpdateError, self).__init__(self.msg)
+
+
 __all__ = ["AuthenticationFailedError", "InvalidArgumentError", "InvalidHttpMethodError", "ArgumentMissingError",
-           "JSONDecodeError", "ResourceNotFoundError", "HttpCodeError", "NoPaymentMethodFoundError"
+           "JSONDecodeError", "ResourceNotFoundError", "HttpCodeError", "NoPaymentMethodFoundError",
+           "AlreadyRemindedPaymentError", "NoPendingPaymentToUpdateError"
            ]

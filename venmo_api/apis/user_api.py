@@ -10,12 +10,15 @@ class UserApi(object):
     def __init__(self, api_client):
         super().__init__()
         self.__api_client = api_client
+        self.__profile = None
 
-    def get_my_profile(self, callback=None):
+    def get_my_profile(self, callback=None, force_update=False) -> Union[User, None]:
         """
         Get my profile info and return as a <User>
         :return my_profile: <User>
         """
+        if self.__profile and not force_update:
+            return self.__profile
 
         # Prepare the request
         resource_path = '/account'
@@ -31,7 +34,8 @@ class UserApi(object):
         if callback:
             return
 
-        return deserialize(response=response, data_type=User, nested_response=nested_response)
+        self.__profile = deserialize(response=response, data_type=User, nested_response=nested_response)
+        return self.__profile
 
     def search_for_users(self, query: str, callback=None,
                          page: int = 1, count: int = 50) -> Union[List[User], None]:

@@ -13,6 +13,10 @@ class JSONSchema:
     def payment_method(json):
         return PaymentMethodParser(json)
 
+    @staticmethod
+    def payment(json):
+        return PaymentParser(json)
+
 
 class TransactionParser:
 
@@ -199,3 +203,63 @@ payment_method_json_format = {'id': 'id',
                               'name': 'name',
                               'type': 'type'
                               }
+
+
+class PaymentParser:
+
+    def __init__(self, json):
+        self.json = json
+
+    def get_id(self):
+        return self.json.get(payment_request_json_format['id'])
+
+    def get_actor(self):
+        return self.json.get(payment_request_json_format['actor'])
+
+    def get_target(self):
+        return self.json.get(payment_request_json_format['target'])\
+            .get(payment_request_json_format['target_user'])
+
+    def get_action(self):
+        return self.json.get(payment_request_json_format['action'])
+
+    def get_amount(self):
+        return self.json.get(payment_request_json_format['amount'])
+
+    def get_audience(self):
+        return self.json.get(payment_request_json_format['audience'])
+
+    def get_date_authorized(self):
+        return self.json.get(payment_request_json_format['date_authorized'])
+
+    def get_date_completed(self):
+        return self.json.get(payment_request_json_format['date_completed'])
+
+    def get_date_created(self):
+        return self.json.get(payment_request_json_format['date_created'])
+
+    def get_date_reminded(self):
+        return self.json.get(payment_request_json_format['date_reminded'])
+
+    def get_note(self):
+        return self.json.get(payment_request_json_format['note'])
+
+    def get_status(self):
+        return self.json.get(payment_request_json_format['status'])
+
+
+payment_request_json_format = {
+    'id': 'id',
+    'actor': 'actor',
+    'target': 'target',
+    'target_user': 'user',
+    'action': 'action',
+    'amount': 'amount',
+    'audience': 'audience',
+    'date_authorized': 'date_authorized',
+    'date_completed': 'date_completed',
+    'date_created': 'date_created',
+    'date_reminded': 'date_reminded',
+    'note': 'note',
+    'status': 'status'
+}

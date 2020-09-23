@@ -13,7 +13,7 @@ def validate_access_token(access_token):
         return
 
     if access_token[:6] != 'Bearer':
-        return f"Barear {access_token}"
+        return f"Bearer {access_token}"
 
     return access_token
 
