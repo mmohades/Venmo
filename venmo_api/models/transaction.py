@@ -1,11 +1,11 @@
 from enum import Enum
-from venmo_api import string_to_timestamp
+from venmo_api import string_to_timestamp, BaseModel
 from venmo_api import User
 from venmo_api import get_phone_model_from_json
 from venmo_api import JSONSchema
 
 
-class Transaction(object):
+class Transaction(BaseModel):
 
     def __init__(self, story_id, payment_id, date_completed, date_created,
                  date_updated, payment_type, amount, audience, status,
@@ -70,15 +70,6 @@ class Transaction(object):
                    device_used=device_used,
                    actor=actor,
                    target=target)
-
-    def __str__(self):
-
-        return f'Transaction: story_id: {self.id}, payment_id: {self.payment_id}, date_completed: {self.date_completed},' \
-            f'date_created: {self.date_created}, date_updated: {self.date_updated},' \
-            f'payment_type: {self.payment_type}, amount: {self.amount},' \
-            f'audience: {self.audience}, status: {self.status}, note: {self.note}, device_used: {self.device_used},\n' \
-            f'actor_user: {self.actor},\n' \
-            f'target_user: {self.target}\n'
 
 
 class TransactionType(Enum):

@@ -1,10 +1,10 @@
 from enum import Enum
 
-from venmo_api import string_to_timestamp, User
+from venmo_api import string_to_timestamp, User, BaseModel
 from venmo_api import JSONSchema
 
 
-class Payment(object):
+class Payment(BaseModel):
 
     def __init__(self, id_, actor, target, action, amount, audience, date_created, date_reminded, date_completed,
                  note, status):
@@ -59,12 +59,6 @@ class Payment(object):
             date_completed=string_to_timestamp(parser.get_date_completed()),
             note=parser.get_note(),
             status=PaymentStatus(parser.get_status())
-        )
-
-    def __str__(self) -> str:
-        return '%s(%s)' % (
-            type(self).__name__,
-            ', '.join('%s=%s' % item for item in vars(self).items())
         )
 
 

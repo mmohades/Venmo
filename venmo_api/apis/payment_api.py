@@ -18,22 +18,26 @@ class PaymentApi(object):
             "no_pending_payment_error2": 2905
         }
 
-    def get_charge_payments(self, callback=None):
+    def get_charge_payments(self, limit=100000, callback=None):
         """
         Get a list of charge ongoing payments (pending request money)
+        :param limit:
         :param callback:
         :return:
         """
         return self.__get_payments(action="charge",
+                                   limit=limit,
                                    callback=callback)
 
-    def get_pay_payments(self, callback=None):
+    def get_pay_payments(self, limit=100000, callback=None):
         """
         Get a list of pay ongoing payments (pending requested money from your profile)
+        :param limit:
         :param callback:
         :return:
         """
         return self.__get_payments(action="pay",
+                                   limit=limit,
                                    callback=callback)
 
     def remind_payment(self, payment: Payment = None, payment_id: int = None) -> bool:
@@ -166,7 +170,7 @@ class PaymentApi(object):
                                           method='PUT',
                                           ok_error_codes=list(self.__payment_update_error_codes.values()))
 
-    def __get_payments(self, action, callback=None):
+    def __get_payments(self, action, limit, callback=None):
         """
         Get a list of ongoing payments with the given action
         :return:
@@ -178,7 +182,7 @@ class PaymentApi(object):
         parameters = {
             "action": action,
             "actor": self.__profile.id,
-            "limit": 100000
+            "limit": limit
         }
         response = self.__api_client.call_api(resource_path=resource_path,
                                               params=parameters,
@@ -248,6 +252,9 @@ class PaymentApi(object):
         payment_methods = self.get_payment_methods()
 
         for p_method in payment_methods:
+            if not p_method:
+                continue
+
             if p_method.role == PaymentRole.DEFAULT:
                 return p_method
 
