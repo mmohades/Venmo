@@ -1,8 +1,8 @@
-from venmo_api import string_to_timestamp
+from venmo_api import string_to_timestamp, BaseModel
 from venmo_api import JSONSchema
 
 
-class User(object):
+class User(BaseModel):
 
     def __init__(self, user_id, username, first_name, last_name, display_name, phone,
                 profile_picture_url, about, date_joined, is_group, is_active):
@@ -61,8 +61,3 @@ class User(object):
                    date_joined=date_joined_timestamp,
                    is_group=parser.get_is_group(),
                    is_active=parser.get_is_active())
-
-    def __str__(self):
-        return f'User: id: {self.id}, username: {self.username}, first_name: {self.first_name}, last_name: {self.last_name}'\
-            f' display_name: {self.display_name}, phone: {self.phone}, profile_picture_url: {self.profile_picture_url}, about: {self.about},'\
-            f' joined: {self.date_joined}, is_group: {self.is_group}, is_active: {self.is_active}'

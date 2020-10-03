@@ -1,5 +1,6 @@
 from .utils.model_util import (string_to_timestamp, get_phone_model_from_json, random_device_id)
 from .models.exception import *
+from .models.base_model import BaseModel
 from .models.json_schema import JSONSchema
 from .models.user import User
 from .models.transaction import Transaction
@@ -18,6 +19,6 @@ __all__ = ["AuthenticationFailedError", "InvalidArgumentError", "InvalidHttpMeth
            "get_phone_model_from_json", "random_device_id",
            "deserialize", "wrap_callback", "warn", "confirm", "get_user_id", "validate_access_token",
            "JSONSchema", "User", "Transaction", "Payment", "PaymentStatus", "PaymentMethod", "PaymentRole",
-           "PaymentPrivacy", "ApiClient", "AuthenticationApi", "UserApi", "PaymentApi",
+           "BaseModel", "PaymentPrivacy", "ApiClient", "AuthenticationApi", "UserApi", "PaymentApi",
            "Client"
            ]

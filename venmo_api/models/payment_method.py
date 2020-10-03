@@ -1,9 +1,10 @@
 from typing import Dict
 from enum import Enum
-from venmo_api import JSONSchema
+from venmo_api import JSONSchema, BaseModel
+import logging
 
 
-class PaymentMethod(object):
+class PaymentMethod(BaseModel):
     def __init__(self, pid: str, p_role: str, p_name: str, p_type: str):
         super().__init__()
 
@@ -23,23 +24,23 @@ class PaymentMethod(object):
         p_type = payment_parser.get_payment_method_type()
 
         # Get the class for this payment, must be either VenmoBalance or BankAccount
-        payment_class = payment_type[p_type]
+        payment_class = payment_type.get(p_type)
+        if not payment_class:
+            logging.warning(f"Skipped a payment_method; No schema existed for the payment_method: {p_type}")
+            return
 
         return payment_class(pid=pid,
                              p_role=p_role,
                              p_name=p_name,
                              p_type=p_type)
 
-    def __str__(self):
-        return f"Payment: id: {self.id}, role: {self.role}, name: {self.name}, type: {self.type}"
 
-
-class VenmoBalance(PaymentMethod):
+class VenmoBalance(PaymentMethod, BaseModel):
     def __init__(self, pid, p_role, p_name, p_type):
         super().__init__(pid, p_role, p_name, p_type)
 
 
-class BankAccount(PaymentMethod):
+class BankAccount(PaymentMethod, BaseModel):
     def __init__(self, pid, p_role, p_name, p_type):
         super().__init__(pid, p_role, p_name, p_type)
 
