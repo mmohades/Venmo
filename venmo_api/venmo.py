@@ -46,4 +46,5 @@ class Client(object):
         :param access_token:
         :return: <bool>
         """
+        access_token = validate_access_token(access_token=access_token)
         return AuthenticationApi.log_out(access_token=access_token)

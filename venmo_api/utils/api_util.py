@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Dict, List
 from venmo_api import ArgumentMissingError, User
+import re
 
 
 def validate_access_token(access_token):
@@ -9,13 +10,13 @@ def validate_access_token(access_token):
     :param access_token:
     :return:
     """
+    token_re = r'^(Bearer)?(.+)$'
     if not access_token:
         return
 
-    if access_token[:6] != 'Bearer':
-        return f"Bearer {access_token}"
+    access_token = re.findall(token_re, access_token)[0][1].replace(' ', '')
 
-    return access_token
+    return f"Bearer {access_token}"
 
 
 def deserialize(response: Dict, data_type, nested_response: List[str] = None):
