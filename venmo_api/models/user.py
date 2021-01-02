@@ -5,9 +5,9 @@ from venmo_api import JSONSchema
 class User(BaseModel):
 
     def __init__(self, user_id, username, first_name, last_name, display_name, phone,
-                profile_picture_url, about, date_joined, is_group, is_active):
+                 profile_picture_url, about, date_joined, is_group, is_active, json=None):
         """
-        Initialize a new user
+        User model
         :param user_id:
         :param username:
         :param first_name:
@@ -19,6 +19,7 @@ class User(BaseModel):
         :param date_joined:
         :param is_group:
         :param is_active:
+        :param json: full_json
         :return:
         """
         super().__init__()
@@ -34,6 +35,7 @@ class User(BaseModel):
         self.date_joined = date_joined
         self.is_group = is_group
         self.is_active = is_active
+        self.__json = json
 
     @classmethod
     def from_json(cls, json, is_profile=False):
@@ -60,4 +62,5 @@ class User(BaseModel):
                    about=parser.get_about(),
                    date_joined=date_joined_timestamp,
                    is_group=parser.get_is_group(),
-                   is_active=parser.get_is_active())
+                   is_active=parser.get_is_active(),
+                   json=json)

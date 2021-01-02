@@ -9,8 +9,24 @@ class Transaction(BaseModel):
 
     def __init__(self, story_id, payment_id, date_completed, date_created,
                  date_updated, payment_type, amount, audience, status,
-                 note, device_used, actor, target):
-
+                 note, device_used, actor, target, json=None):
+        """
+        Transaction model
+        :param story_id:
+        :param payment_id:
+        :param date_completed:
+        :param date_created:
+        :param date_updated:
+        :param payment_type:
+        :param amount:
+        :param audience:
+        :param status:
+        :param note:
+        :param device_used:
+        :param actor:
+        :param target:
+        :param json:
+        """
         super().__init__()
 
         self.id = story_id
@@ -30,6 +46,7 @@ class Transaction(BaseModel):
 
         self.actor = actor
         self.target = target
+        self.__json = json
 
     @classmethod
     def from_json(cls, json):
@@ -69,7 +86,8 @@ class Transaction(BaseModel):
                    status=parser.get_status(),
                    device_used=device_used,
                    actor=actor,
-                   target=target)
+                   target=target,
+                   json=json)
 
 
 class TransactionType(Enum):
@@ -86,4 +104,3 @@ class TransactionType(Enum):
     ATM_WITHDRAWAL = 'atm_withdrawal'
 
     DISBURSEMENT = 'disbursement'
-

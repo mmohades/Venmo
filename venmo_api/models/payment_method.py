@@ -5,13 +5,22 @@ import logging
 
 
 class PaymentMethod(BaseModel):
-    def __init__(self, pid: str, p_role: str, p_name: str, p_type: str):
+    def __init__(self, pid: str, p_role: str, p_name: str, p_type: str, json=None):
+        """
+        Payment method model (with different types like, venmo balance, bank account, ...)
+        :param pid:
+        :param p_role:
+        :param p_name:
+        :param p_type:
+        :param json:
+        """
         super().__init__()
 
         self.id = pid
         self.role = PaymentRole(p_role)
         self.name = p_name
         self.type = payment_type.get(p_type)
+        self.__json = json
 
     @classmethod
     def from_json(cls, json: Dict):
@@ -32,17 +41,18 @@ class PaymentMethod(BaseModel):
         return payment_class(pid=pid,
                              p_role=p_role,
                              p_name=p_name,
-                             p_type=p_type)
+                             p_type=p_type,
+                             json=json)
 
 
 class VenmoBalance(PaymentMethod, BaseModel):
-    def __init__(self, pid, p_role, p_name, p_type):
-        super().__init__(pid, p_role, p_name, p_type)
+    def __init__(self, pid, p_role, p_name, p_type, json=None):
+        super().__init__(pid, p_role, p_name, p_type, json)
 
 
 class BankAccount(PaymentMethod, BaseModel):
-    def __init__(self, pid, p_role, p_name, p_type):
-        super().__init__(pid, p_role, p_name, p_type)
+    def __init__(self, pid, p_role, p_name, p_type, json=None):
+        super().__init__(pid, p_role, p_name, p_type, json)
 
 
 class PaymentRole(Enum):

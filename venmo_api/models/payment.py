@@ -7,9 +7,9 @@ from venmo_api import JSONSchema
 class Payment(BaseModel):
 
     def __init__(self, id_, actor, target, action, amount, audience, date_created, date_reminded, date_completed,
-                 note, status):
+                 note, status, json=None):
         """
-        Create a Payment object
+        Payment model
         :param id_:
         :param actor:
         :param target:
@@ -21,6 +21,7 @@ class Payment(BaseModel):
         :param date_completed:
         :param note:
         :param status:
+        :param json:
         """
         super().__init__()
         self.id = id_
@@ -34,6 +35,7 @@ class Payment(BaseModel):
         self.date_completed = date_completed
         self.note = note
         self.status = status
+        self.__json = json
 
     @classmethod
     def from_json(cls, json):
@@ -58,7 +60,8 @@ class Payment(BaseModel):
             date_reminded=string_to_timestamp(parser.get_date_reminded()),
             date_completed=string_to_timestamp(parser.get_date_completed()),
             note=parser.get_note(),
-            status=PaymentStatus(parser.get_status())
+            status=PaymentStatus(parser.get_status()),
+            json=json
         )
 
 
@@ -66,4 +69,3 @@ class PaymentStatus(Enum):
     SETTLED = 'settled'
     CANCELLED = 'cancelled'
     PENDING = 'pending'
-    FAILED = 'failed'
