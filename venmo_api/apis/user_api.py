@@ -38,13 +38,14 @@ class UserApi(object):
         return self.__profile
 
     def search_for_users(self, query: str, callback=None,
-                         page: int = 1, count: int = 50) -> Union[List[User], None]:
+                         page: int = 1, count: int = 50, username=False) -> Union[List[User], None]:
         """
         search for [query] in users
-        :param query: <str>
-        :param callback: <function>
-        :param count: <int>
-        :param page: <int>
+        :param query:
+        :param callback:
+        :param page:
+        :param count:
+        :param username: default: False; Pass True if search is by username
         :return users_list: <list> A list of <User> objects or empty
         """
 
@@ -57,6 +58,8 @@ class UserApi(object):
                                                                  max_offset=9900,
                                                                  count=count)
         params = {'query': query}
+        if username or '@' in query:
+            params = {'query': query.replace('@', ''), 'type': 'username'}
         params.update(offset_limit_params)
 
         response = self.__api_client.call_api(resource_path=resource_path, params=params,
@@ -88,6 +91,20 @@ class UserApi(object):
             return
 
         return deserialize(response=response, data_type=User)
+
+    def get_user_by_username(self, username: str) -> Union[User, None]:
+        """
+        Get the user profile with [username]
+        :param username:
+        :return user: <User> <NoneType>
+        """
+        users = self.search_for_users(query=username, username=True)
+        for user in users:
+            if user.username == username:
+                return user
+
+        # username not found
+        return None
 
     def get_user_friends_list(self, user_id: str = None,
                               user: User = None,

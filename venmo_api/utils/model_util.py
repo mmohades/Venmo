@@ -23,10 +23,12 @@ def get_phone_model_from_json(app_json):
     :param app_json:
     :return:
     """
-    app = {1: "iPhone", 4: "Android"}
-    _id = app_json['id']
+    app = {1: "iPhone", 4: "Android", 0: "Other"}
+    _id = 0
+    if app_json:
+        _id = app_json['id']
 
-    return app.get(int(_id)) or "undefined"
+    return app.get(int(_id))
 
 
 def random_device_id():

@@ -22,12 +22,12 @@ requirements = requirements()
 
 setup(
     name='venmo-api',
-    version='0.2.2',
+    version='0.2.3',
     author="Mark Mohades",
     license="GNU General Public License v3",
     url='https://github.com/mmohades/venmo',
     keywords='Python Venmo API wrapper',
-    description="A Simple Python Wrapper For The Venmo API",
+    description="Venmo API client for Python",
     long_description=readme,
     long_description_content_type="text/markdown",
     packages=find_packages(),
