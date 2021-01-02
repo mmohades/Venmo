@@ -15,8 +15,9 @@ from .venmo import Client
 
 __all__ = ["AuthenticationFailedError", "InvalidArgumentError", "InvalidHttpMethodError", "ArgumentMissingError",
            "JSONDecodeError", "ResourceNotFoundError", "HttpCodeError", "NoPaymentMethodFoundError",
-           "NoPendingPaymentToUpdateError", "AlreadyRemindedPaymentError", "string_to_timestamp",
-           "get_phone_model_from_json", "random_device_id",
+           "NoPendingPaymentToUpdateError", "AlreadyRemindedPaymentError", "NotEnoughBalanceError",
+           "GeneralPaymentError",
+           "get_phone_model_from_json", "random_device_id", "string_to_timestamp",
            "deserialize", "wrap_callback", "warn", "confirm", "get_user_id", "validate_access_token",
            "JSONSchema", "User", "Transaction", "Payment", "PaymentStatus", "PaymentMethod", "PaymentRole",
            "BaseModel", "PaymentPrivacy", "ApiClient", "AuthenticationApi", "UserApi", "PaymentApi",

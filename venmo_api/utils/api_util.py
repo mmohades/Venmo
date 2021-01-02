@@ -29,7 +29,7 @@ def deserialize(response: Dict, data_type, nested_response: List[str] = None):
 
     body = response.get('body')
     if not body:
-        raise Exception("Can't  get an empty response body.")
+        raise Exception("Can't get an empty response body.")
 
     data = body.get('data')
     nested_response = nested_response or []

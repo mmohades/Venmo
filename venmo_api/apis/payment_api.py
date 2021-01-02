@@ -1,7 +1,6 @@
 from venmo_api import ApiClient, Payment, ArgumentMissingError, AlreadyRemindedPaymentError, \
-    NoPendingPaymentToUpdateError
+    NoPendingPaymentToUpdateError, NoPaymentMethodFoundError, NotEnoughBalanceError, GeneralPaymentError
 from venmo_api import User, PaymentMethod, PaymentRole, PaymentPrivacy
-from venmo_api import NoPaymentMethodFoundError
 from venmo_api import deserialize, wrap_callback, get_user_id
 from typing import List, Union
 
@@ -12,10 +11,11 @@ class PaymentApi(object):
         super().__init__()
         self.__profile = profile
         self.__api_client = api_client
-        self.__payment_update_error_codes = {
+        self.__payment_error_codes = {
             "already_reminded_error": 2907,
             "no_pending_payment_error": 2901,
-            "no_pending_payment_error2": 2905
+            "no_pending_payment_error2": 2905,
+            "not_enough_balance_error": 13006
         }
 
     def get_charge_payments(self, limit=100000, callback=None):
@@ -57,7 +57,7 @@ class PaymentApi(object):
 
         # if the reminder has already sent
         if 'error' in response.get('body'):
-            if response['body']['error']['code'] == self.__payment_update_error_codes['no_pending_payment_error2']:
+            if response['body']['error']['code'] == self.__payment_error_codes['no_pending_payment_error2']:
                 raise NoPendingPaymentToUpdateError(payment_id=payment_id,
                                                     action=action)
             raise AlreadyRemindedPaymentError(payment_id=payment_id)
@@ -168,7 +168,7 @@ class PaymentApi(object):
         return self.__api_client.call_api(resource_path=resource_path,
                                           body=body,
                                           method='PUT',
-                                          ok_error_codes=list(self.__payment_update_error_codes.values()))
+                                          ok_error_codes=list(self.__payment_error_codes.values())[:-1])
 
     def __get_payments(self, action, limit, callback=None):
         """
@@ -235,10 +235,19 @@ class PaymentApi(object):
         wrapped_callback = wrap_callback(callback=callback,
                                          data_type=None)
 
-        self.__api_client.call_api(resource_path=resource_path,
-                                   method='POST',
-                                   body=body,
-                                   callback=wrapped_callback)
+        result = self.__api_client.call_api(resource_path=resource_path,
+                                            method='POST',
+                                            body=body,
+                                            callback=wrapped_callback)
+        # handle 200 status code errors
+        error_code = result['body']['data'].get('error_code')
+        if error_code:
+            if error_code == self.__payment_error_codes['not_enough_balance_error']:
+                raise NotEnoughBalanceError(amount, target_user_id)
+
+            error = result['body']['data']
+            raise GeneralPaymentError(f"{error.get('title')}\n{error.get('error_msg')}")
+
         if callback:
             return
         # if no exception raises, then it was successful

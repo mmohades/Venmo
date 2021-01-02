@@ -85,7 +85,24 @@ class NoPendingPaymentToUpdateError(Exception):
         super(NoPendingPaymentToUpdateError, self).__init__(self.msg)
 
 
+class NotEnoughBalanceError(Exception):
+    def __init__(self, amount, target_user_id):
+        self.msg = f"Failed to complete transaction of ${amount} to {target_user_id}.\n" \
+                   f"There is not enough balance on the default payment method to complete the transaction.\n" \
+                   f"hint: Use other payment methods like\n" \
+                   f"send_money(amount, tr_note, target_user_id, funding_source_id=other_payment_id_here)\n" \
+                   f"or transfer money to your default payment method.\n"
+        super(NotEnoughBalanceError, self).__init__(self.msg)
+
+
+class GeneralPaymentError(Exception):
+    def __init__(self, msg):
+        self.msg = f"Transaction failed. {msg}"
+        super(GeneralPaymentError, self).__init__(self.msg)
+
+
 __all__ = ["AuthenticationFailedError", "InvalidArgumentError", "InvalidHttpMethodError", "ArgumentMissingError",
            "JSONDecodeError", "ResourceNotFoundError", "HttpCodeError", "NoPaymentMethodFoundError",
-           "AlreadyRemindedPaymentError", "NoPendingPaymentToUpdateError"
+           "AlreadyRemindedPaymentError", "NoPendingPaymentToUpdateError", "NotEnoughBalanceError",
+           "GeneralPaymentError"
            ]
