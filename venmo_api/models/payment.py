@@ -1,7 +1,5 @@
+from venmo_api import string_to_timestamp, User, BaseModel, JSONSchema
 from enum import Enum
-
-from venmo_api import string_to_timestamp, User, BaseModel
-from venmo_api import JSONSchema
 
 
 class Payment(BaseModel):
@@ -35,7 +33,7 @@ class Payment(BaseModel):
         self.date_completed = date_completed
         self.note = note
         self.status = status
-        self.__json = json
+        self._json = json
 
     @classmethod
     def from_json(cls, json):

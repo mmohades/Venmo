@@ -1,6 +1,6 @@
+from venmo_api import ArgumentMissingError, User, Page
 from enum import Enum
 from typing import Dict, List
-from venmo_api import ArgumentMissingError, User
 import re
 
 
@@ -24,7 +24,7 @@ def deserialize(response: Dict, data_type, nested_response: List[str] = None):
     :param response: <Dict>
     :param data_type: <Generic>
     :param nested_response: <List[str]> Optional. Loop through the body
-    :return:
+    :return: a single <Object> or a <Page> of objects (Objects can be User/Transaction/Payment/PaymentMethod)
     """
 
     body = response.get('body')
@@ -70,10 +70,10 @@ def wrap_callback(callback, data_type, nested_response: List[str] = None):
 def __get_objs_from_json_list(json_list, data_type):
     """Process JSON for User/Transaction
     :param json_list: <list> a list of objs
-    :param data_type: <class> Either User/Transaction
-    :return: <list> a list of <User>
+    :param data_type: <class> User/Transaction/Payment/PaymentMethod
+    :return: <page>
     """
-    result = []
+    result = Page()
     for obj in json_list:
         data_obj = data_type.from_json(obj)
         if not data_obj:
