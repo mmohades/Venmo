@@ -1,5 +1,4 @@
-from venmo_api import string_to_timestamp, BaseModel
-from venmo_api import JSONSchema
+from venmo_api import string_to_timestamp, BaseModel, JSONSchema
 
 
 class User(BaseModel):
@@ -35,7 +34,7 @@ class User(BaseModel):
         self.date_joined = date_joined
         self.is_group = is_group
         self.is_active = is_active
-        self.__json = json
+        self._json = json
 
     @classmethod
     def from_json(cls, json, is_profile=False):

@@ -1,6 +1,6 @@
+from venmo_api import JSONSchema, BaseModel
 from typing import Dict
 from enum import Enum
-from venmo_api import JSONSchema, BaseModel
 import logging
 
 
@@ -20,7 +20,7 @@ class PaymentMethod(BaseModel):
         self.role = PaymentRole(p_role)
         self.name = p_name
         self.type = payment_type.get(p_type)
-        self.__json = json
+        self._json = json
 
     @classmethod
     def from_json(cls, json: Dict):
