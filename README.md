@@ -1,5 +1,7 @@
 # Venmo API
 
+Disclaimer: This is an individual effort and is not PayPal/Venmo sponsored or maintained. 
+
 ## Introduction
 
 This is a wrapper for the Venmo API. This library provides a Python interface for the Venmo API. It's compatible with Python versions 3.6+.
