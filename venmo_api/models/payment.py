@@ -68,3 +68,4 @@ class PaymentStatus(Enum):
     CANCELLED = 'cancelled'
     PENDING = 'pending'
     FAILED = 'failed'
+    EXPIRED = 'expired'
