@@ -3,6 +3,8 @@ from .models.exception import *
 from .models.base_model import BaseModel
 from .models.json_schema import JSONSchema
 from .models.user import User
+from .models.mention import Mention
+from .models.comment import Comment
 from .models.transaction import Transaction
 from .models.payment import Payment, PaymentStatus
 from .models.payment_method import (PaymentMethod, PaymentRole, PaymentPrivacy)
@@ -20,7 +22,8 @@ __all__ = ["AuthenticationFailedError", "InvalidArgumentError", "InvalidHttpMeth
            "GeneralPaymentError",
            "get_phone_model_from_json", "random_device_id", "string_to_timestamp",
            "deserialize", "wrap_callback", "warn", "confirm", "get_user_id", "validate_access_token",
-           "JSONSchema", "User", "Transaction", "Payment", "PaymentStatus", "PaymentMethod", "PaymentRole", "Page",
-           "BaseModel", "PaymentPrivacy", "ApiClient", "AuthenticationApi", "UserApi", "PaymentApi",
+           "JSONSchema",  "User", "Mention", "Comment", "Transaction", "Payment", "PaymentStatus", "PaymentMethod",
+           "PaymentRole", "Page",   "BaseModel",
+           "PaymentPrivacy", "ApiClient", "AuthenticationApi", "UserApi", "PaymentApi",
            "Client"
            ]

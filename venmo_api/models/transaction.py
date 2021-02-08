@@ -1,4 +1,4 @@
-from venmo_api import string_to_timestamp, BaseModel, User, get_phone_model_from_json, JSONSchema
+from venmo_api import string_to_timestamp, BaseModel, User, get_phone_model_from_json, JSONSchema, Comment
 from enum import Enum
 
 
@@ -6,7 +6,7 @@ class Transaction(BaseModel):
 
     def __init__(self, story_id, payment_id, date_completed, date_created,
                  date_updated, payment_type, amount, audience, status,
-                 note, device_used, actor, target, json=None):
+                 note, device_used, actor, target, comments, json=None):
         """
         Transaction model
         :param story_id:
@@ -22,6 +22,7 @@ class Transaction(BaseModel):
         :param device_used:
         :param actor:
         :param target:
+        :param comments:
         :param json:
         """
         super().__init__()
@@ -40,6 +41,7 @@ class Transaction(BaseModel):
 
         self.note = note
         self.device_used = device_used
+        self.comments = comments
 
         self.actor = actor
         self.target = target
@@ -71,6 +73,9 @@ class Transaction(BaseModel):
         actor = User.from_json(json=parser.get_actor())
         device_used = get_phone_model_from_json(parser.get_actor_app())
 
+        comments_list = parser.get_comments()
+        comments = [Comment.from_json(json=comment) for comment in comments_list] if comments_list else []
+
         return cls(story_id=parser.get_story_id(),
                    payment_id=parser.get_payment_id(),
                    date_completed=date_completed,
@@ -84,6 +89,7 @@ class Transaction(BaseModel):
                    device_used=device_used,
                    actor=actor,
                    target=target,
+                   comments=comments,
                    json=json)
 
 

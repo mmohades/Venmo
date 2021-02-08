@@ -6,14 +6,16 @@ from string import ascii_uppercase
 def string_to_timestamp(utc):
     """
     Convert UTC string format by Venmo, to timestamp
-    :param utc: String, Format "2019-02-07T18:04:18"
+    :param utc: String, Format "2019-02-07T18:04:18" or "2019-02-07T18:04:18.474000"
     :return: int, timestamp
     """
     if not utc:
         return
-
-    _date = datetime.strptime(utc, '%Y-%m-%dT%H:%M:%S')
-
+    try:
+        _date = datetime.strptime(utc, '%Y-%m-%dT%H:%M:%S')
+    # This except was added for comments (on transactions) - they display the date_created down to the microsecond
+    except ValueError:
+        _date = datetime.strptime(utc, '%Y-%m-%dT%H:%M:%S.%f')
     return int(_date.timestamp())
 
 

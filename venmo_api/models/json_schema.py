@@ -16,6 +16,14 @@ class JSONSchema:
     def payment(json):
         return PaymentParser(json)
 
+    @staticmethod
+    def comment(json):
+        return CommentParser(json)
+
+    @staticmethod
+    def mention(json):
+        return MentionParser(json)
+
 
 class TransactionParser:
 
@@ -45,7 +53,8 @@ class TransactionParser:
         return self.json.get(transaction_json_format['likes'])
 
     def get_comments(self):
-        return self.json.get(transaction_json_format['comments'])
+        comments = self.json.get(transaction_json_format['comments'])
+        return comments.get(transaction_json_format['comments_list']) if comments else comments
 
     def get_transaction_type(self):
         return self.json.get(transaction_json_format['transaction_type'])
@@ -74,6 +83,7 @@ class TransactionParser:
     def get_amount(self):
         return self.payment.get(payment_json_format['amount'])
 
+
 transaction_json_format = {
     "story_id": "id",
     "date_created": "date_created",
@@ -83,6 +93,7 @@ transaction_json_format = {
     "app": "app",
     "payment": "payment",
     "comments": "comments",
+    "comments_list": "data",
     "likes": "likes",
     "transaction_type": "type"
 }
@@ -216,7 +227,7 @@ class PaymentParser:
         return self.json.get(payment_request_json_format['actor'])
 
     def get_target(self):
-        return self.json.get(payment_request_json_format['target'])\
+        return self.json.get(payment_request_json_format['target']) \
             .get(payment_request_json_format['target_user'])
 
     def get_action(self):
@@ -261,4 +272,55 @@ payment_request_json_format = {
     'date_reminded': 'date_reminded',
     'note': 'note',
     'status': 'status'
+}
+
+
+class CommentParser:
+
+    def __init__(self, json):
+        self.json = json
+
+    def get_date_created(self):
+        return self.json.get(comment_json_format['date_created'])
+
+    def get_message(self):
+        return self.json.get(comment_json_format['message'])
+
+    def get_mentions(self):
+        mentions = self.json.get(comment_json_format['mentions'])
+        return mentions.get(comment_json_format['mentions_list']) if mentions else mentions
+
+    def get_id(self):
+        return self.json.get(comment_json_format['id'])
+
+    def get_user(self):
+        return self.json.get(comment_json_format['user'])
+
+
+comment_json_format = {
+    "date_created": "date_created",
+    "message": "message",
+    "message_list": "data",
+    "mentions": "mentions",
+    "mentions_list": "data",
+    "id": "id",
+    "user": "user"
+}
+
+
+class MentionParser:
+
+    def __init__(self, json):
+        self.json = json
+
+    def get_username(self):
+        return self.json.get(mention_json_format['username'])
+
+    def get_user(self):
+        return self.json.get(mention_json_format['user'])
+
+
+mention_json_format = {
+    "username": "username",
+    "user": "user"
 }
