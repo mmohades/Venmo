@@ -1,4 +1,4 @@
-from venmo_api import string_to_timestamp, BaseModel, User, get_phone_model_from_json, JSONSchema, Comment
+from venmo_api import string_to_timestamp, BaseModel, User, Comment, get_phone_model_from_json, JSONSchema
 from enum import Enum
 
 
