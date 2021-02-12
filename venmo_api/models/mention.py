@@ -19,7 +19,7 @@ class Mention(BaseModel):
     @classmethod
     def from_json(cls, json):
         """
-        Create a new Comment from the given json.
+        Create a new Mention from the given json.
         :param json:
         :return:
         """
