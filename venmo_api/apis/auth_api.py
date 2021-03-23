@@ -1,5 +1,5 @@
 from venmo_api import random_device_id, warn, confirm, AuthenticationFailedError, ApiClient
-
+import time
 
 class AuthenticationApi(object):
 
@@ -11,11 +11,12 @@ class AuthenticationApi(object):
         self.__device_id = device_id or random_device_id()
         self.__api_client = api_client or ApiClient()
 
-    def login_with_credentials_cli(self, username: str, password: str) -> str:
+    def login_with_credentials_cli(self, username: str, password: str, get_2fa_code_from_file_path: str = None) -> str:
         """
         Pass your username and password to get an access_token for using the API.
         :param username: <str> Phone, email or username
         :param password: <str> Your account password to login
+        :param get_2fa_code_from_file_path: <str> [optional] Path to 2fa code txt file
         :return: <str>
         """
 
@@ -29,7 +30,7 @@ class AuthenticationApi(object):
 
         # if two-factor error
         if response.get('body').get('error'):
-            access_token = self.__two_factor_process_cli(response=response)
+            access_token = self.__two_factor_process_cli(response=response, get_2fa_code_from_file_path=get_2fa_code_from_file_path)
             self.trust_this_device()
         else:
             access_token = response['body']['access_token']
@@ -57,10 +58,12 @@ class AuthenticationApi(object):
         confirm(f"Successfully logged out.")
         return True
 
-    def __two_factor_process_cli(self, response: dict) -> str:
+    def __two_factor_process_cli(self, response: dict, get_2fa_code_from_file_path: str = None) -> str:
         """
         Get response from authenticate_with_username_password for a CLI two-factor process
         :param response:
+        :param get_2fa_code_from_file_path: <str> [optional] Path to 2fa code txt file
+
         :return: <str> access_token
         """
 
@@ -70,8 +73,10 @@ class AuthenticationApi(object):
                                             "(check your password)")
 
         self.send_text_otp(otp_secret=otp_secret)
-        user_otp = self.__ask_user_for_otp_password()
-
+        if not get_2fa_code_from_file_path:
+            user_otp = self.__ask_user_for_otp_password()
+        else:
+            user_otp = self.__get_2fa_code_from_file(path=get_2fa_code_from_file_path)
         access_token = self.authenticate_using_otp(user_otp, otp_secret)
         self.__api_client.update_access_token(access_token=access_token)
 
@@ -178,3 +183,25 @@ class AuthenticationApi(object):
             otp = input("Enter OTP that you received on your phone from Venmo: (It must be 6 digits)\n")
 
         return otp
+
+
+    @staticmethod
+    def __get_2fa_code_from_file(path, file_poll_time_seconds = 2):
+        while True:
+            try:
+                print(f"Trying to read file from {path} ...")
+                file = open(path, "r")
+                print("Read file complete")
+                otp = file.read()
+                if len(otp) != 6:
+                    print(f"OTP length must be 6 digits... not {len(otp)}")
+                    time.sleep(file_poll_time_seconds)
+                elif not otp.isdigit():
+                    print(f"OTP must be a digit string")
+                    time.sleep(file_poll_time_seconds)
+                else:
+                    return otp
+            except OSError:
+                print(f"Could not read file... attempting read again in {file_poll_time_seconds} seconds")
+                time.sleep(file_poll_time_seconds)
+                pass

@@ -27,17 +27,18 @@ class Client(object):
         return self.__profile
 
     @staticmethod
-    def get_access_token(username: str, password: str, device_id: str = None) -> str:
+    def get_access_token(username: str, password: str, device_id: str = None, get_2fa_code_from_file_path: str = None) -> str:
         """
         Log in using your credentials and get an access_token to use in the API
         :param username: <str> Can be username, phone number (without +1) or email address.
         :param password: <str> Account's password
         :param device_id: <str> [optional] A valid device-id.
+        :param get_2fa_code_from_file_path: <str> [optional] Path to 2fa code txt file
 
         :return: <str> access_token
         """
         authn_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
-        return authn_api.login_with_credentials_cli(username=username, password=password)
+        return authn_api.login_with_credentials_cli(username=username, password=password, get_2fa_code_from_file_path=get_2fa_code_from_file_path)
 
     @staticmethod
     def log_out(access_token) -> bool:
