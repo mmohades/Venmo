@@ -40,7 +40,7 @@ class AuthenticationApi(object):
         print(f"access_token: {access_token}\n"
               f"device-id: {self.__device_id}")
 
-        return access_token
+        return access_token, self.__device_id
 
     @staticmethod
     def log_out(access_token: str) -> bool:
