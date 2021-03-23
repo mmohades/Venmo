@@ -1,8 +1,8 @@
 from venmo_api import random_device_id, warn, confirm, AuthenticationFailedError, ApiClient
 import time
 
-class AuthenticationApi(object):
 
+class AuthenticationApi(object):
     TWO_FACTOR_ERROR_CODE = 81109
 
     def __init__(self, api_client: ApiClient = None, device_id: str = None):
@@ -30,14 +30,15 @@ class AuthenticationApi(object):
 
         # if two-factor error
         if response.get('body').get('error'):
-            access_token = self.__two_factor_process_cli(response=response, get_2fa_code_from_file_path=get_2fa_code_from_file_path)
+            access_token = self.__two_factor_process_cli(response=response,
+                                                         get_2fa_code_from_file_path=get_2fa_code_from_file_path)
             self.trust_this_device()
         else:
             access_token = response['body']['access_token']
 
         confirm("Successfully logged in. Note your token and device-id")
         print(f"access_token: {access_token}\n"
-             f"device-id: {self.__device_id}")
+              f"device-id: {self.__device_id}")
 
         return access_token
 
@@ -176,7 +177,7 @@ class AuthenticationApi(object):
         self.__api_client.update_access_token(access_token=access_token)
 
     @staticmethod
-    def __ask_user_for_otp_password():
+    def __ask_user_for_otp_password() -> str:
 
         otp = ""
         while len(otp) < 6 or not otp.isdigit():
@@ -184,9 +185,8 @@ class AuthenticationApi(object):
 
         return otp
 
-
     @staticmethod
-    def __get_2fa_code_from_file(path, file_poll_time_seconds = 2):
+    def __get_2fa_code_from_file(path: str, file_poll_time_seconds: float = 2) -> str:
         while True:
             try:
                 print(f"Trying to read file from {path} ...")
