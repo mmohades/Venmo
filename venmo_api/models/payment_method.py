@@ -54,6 +54,9 @@ class BankAccount(PaymentMethod, BaseModel):
     def __init__(self, pid, p_role, p_name, p_type, json=None):
         super().__init__(pid, p_role, p_name, p_type, json)
 
+class Card(PaymentMethod, BaseModel):
+    def __init__(self, pid, p_role, p_name, p_type, json=None):
+        super().__init__(pid, p_role, p_name, p_type, json)
 
 class PaymentRole(Enum):
     DEFAULT = 'default'
@@ -67,4 +70,4 @@ class PaymentPrivacy(Enum):
     FRIENDS = 'friends'
 
 
-payment_type = {'bank': BankAccount, 'balance': VenmoBalance}
+payment_type = {'bank': BankAccount, 'balance': VenmoBalance, 'card': Card}
