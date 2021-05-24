@@ -22,7 +22,7 @@ requirements = requirements()
 
 setup(
     name='venmo-api',
-    version='0.3.0',
+    version='0.3.1',
     author="Mark Mohades",
     license="GNU General Public License v3",
     url='https://github.com/mmohades/venmo',
