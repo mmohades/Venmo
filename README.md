@@ -26,51 +26,79 @@ $ python3 setup.py install
 
 ### Usage
 
-In short, you can send money, request for money, get a user's public transactions, get a user's public profile info, etc. The following is an example of initializing and working with it.
+To use the API client, you first need to get your account's access token. Store your access token somewhere safe as anyone with the token can do everything with your Venmo account (e.g., transferring money). Also, make sure to revoke your access token once you are done using it using [log_out()](#revoke-token).
 
- ```python
+```python
 from venmo_api import Client
 
 # Get your access token. You will need to complete the 2FA process
+# Please store it somewhere safe and use it next time
+# Never commit your credentials or token to a git repository
 access_token = Client.get_access_token(username='myemail@random.com',
                                         password='your password')
-venmo = Client(access_token=access_token)
+print("My token:", access_token)
+```
 
-# Search for users. You get 50 results per page.
-users = venmo.user.search_for_users(query="Peter",
-                                     page=2)
+The following is an example of initializing and working with the api client.
+
+ ```python
+access_token = "YOUR_ACCESS_TOKEN"
+
+# Initialize api client using an access-token
+client = Client(access_token=access_token)
+
+# Search for users. You get a maximum of 50 results per request.
+users = client.user.search_for_users(query="Peter")
 for user in users:
     print(user.username)
 
-# Or, you can pass a callback to make it multi-threaded
+# Or pass a callback to make it multi-threaded
 def callback(users):
     for user in users:
         print(user.username)
-venmo.user.search_for_users(query="peter",
-                             callback=callback,
-                             page=2,
-                             count=10)
 
+client.user.search_for_users(query="peter",
+                             callback=callback,
+                             limit=10)
  ```
-Keep this in mind that your access token never expires! You will need to revoke it by yoursef.
+##### Revoke token
+
+Keep this in mind that your access token never expires! You will need to revoke it yoursef:
 
 ```Python
-venmo.log_out("Bearer a40fsdfhsfhdsfjhdkgljsdglkdsfj3j3i4349t34j7d")
+client.log_out("Bearer a40fsdfhsfhdsfjhdkgljsdglkdsfj3j3i4349t34j7d")
 ```
+
+
+
+##### Payment methods
+
+Get all your payment methods to use one's id for sending_money
+
+````python
+payment_methods = client.payment.get_payment_methods()
+for payment_method in payment_methods:
+    print(payment_method.to_json())
+````
+
+##### Sending or requesting money
 
 ```python
 # Request money
-venmo.payment.request_money(32.5, "house expenses", "1122334455667")
+client.payment.request_money(32.5, "house expenses", "0000000000000000000")
+# Send money (with default payment method)
+client.payment.send_money(13.68, "thanks for the 🍔", "0000000000000000000")
+
+# Send money (with the provided payment method id)
+client.payment.send_money(amount=13.68,
+                          note="thanks for the 🍔",
+                          target_user_id="0000000000000000000",
+                          funding_source_id='9999999999999999999')
 ```
 
-```python
-# Send money
-venmo.payment.send_money(13.68, "thanks for the 🍔", "1122334455667")
-```
+##### Transactions
 
-
-
-Getting a user's transactions (public, friends and privates that happen between your account and user_id account)
+Getting a user's transactions (only the ones that are visible to you, e.g, their `public` transactions)
 
 ```python
 def callback(transactions_list):
@@ -78,11 +106,33 @@ def callback(transactions_list):
         print(transaction)
 
 # callback is optional. Max number of transactions per request is 50.
-venmo_api.user.get_user_transactions(user_id='0000000000000',
-                                     callback=callback) 
+client.user.get_user_transactions(user_id='0000000000000000000',
+                                     callback=callback)
 ```
 
+##### Friends list
 
+```python
+# Get a user's friend's list
+users = client.user.get_user_friends_list(user_id='0000000000000000000')
+for user in users:
+    print(user)
+```
+
+##### Pagination
+
+Here is a pagination example:
+
+```python
+# Get all the transactions possible (prints 50 per request until nothing has left)
+transactions = client.user.get_user_transactions(user_id='0000000000000000000')
+while transactions:
+    for transaction in transactions:
+        print(transaction)
+
+    print("\n" + "=" * 15 + "\n\tNEXT PAGE\n" + "=" * 15 + "\n")
+    transactions = transactions.get_next_page()
+```
 
 ### Documentation
 
