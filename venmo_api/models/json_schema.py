@@ -9,6 +9,10 @@ class JSONSchema:
         return UserParser(json=json, is_profile=is_profile)
 
     @staticmethod
+    def merchant(json):
+        return MerchantParser(json)
+
+    @staticmethod
     def payment_method(json):
         return PaymentMethodParser(json)
 
@@ -32,10 +36,15 @@ class TransactionParser:
             return
 
         self.json = json
-        self.payment = json.get(transaction_json_format['payment'])
+        self.transaction_type = json.get(transaction_json_format['transaction_type'])
+        if self.transaction_type == "authorization":
+            self.authorization = json.get(transaction_json_format['authorization'])
+        else:
+            self.payment = json.get(transaction_json_format['payment'])
+
 
     def get_story_id(self):
-        return self.json.get(transaction_json_format['story_id'])
+        return self.authorization.get(authorization_format['story_id']) if hasattr(self, 'authorization') else self.json.get(transaction_json_format['story_id'])
 
     def get_date_created(self):
         return self.json.get(transaction_json_format['date_created'])
@@ -44,7 +53,7 @@ class TransactionParser:
         return self.json.get(transaction_json_format['date_updated'])
 
     def get_actor_app(self):
-        return self.json.get(transaction_json_format['app'])
+        return self.authorization.get(authorization_format['app']) if hasattr(self, 'authorization') else self.json.get(transaction_json_format['app'])
 
     def get_audience(self):
         return self.json.get(transaction_json_format['aud'])
@@ -57,7 +66,7 @@ class TransactionParser:
         return comments.get(transaction_json_format['comments_list']) if comments else comments
 
     def get_transaction_type(self):
-        return self.json.get(transaction_json_format['transaction_type'])
+        return self.transaction_type
 
     def get_payment_id(self):
         return self.payment.get(payment_json_format['payment_id'])
@@ -69,19 +78,52 @@ class TransactionParser:
         return self.payment.get(payment_json_format['date_completed'])
 
     def get_story_note(self):
-        return self.payment.get(payment_json_format['note'])
+        return "" if hasattr(self, 'authorization') else self.payment.get(payment_json_format['note'])
 
     def get_actor(self):
-        return self.payment.get(payment_json_format['actor'])
+        return self.authorization.get(authorization_format['user']) if hasattr(self, 'authorization') else self.payment.get(payment_json_format['actor'])
 
     def get_target(self):
-        return self.payment.get(payment_json_format['target']).get('user')
+        return self.authorization.get(authorization_format['merchant']) if hasattr(self, 'authorization') else self.payment.get(payment_json_format['target']).get('user')
 
     def get_status(self):
-        return self.payment.get(payment_json_format['status'])
+        return self.authorization.get(authorization_format['status']) if hasattr(self, 'authorization') else self.payment.get(payment_json_format['status'])
 
     def get_amount(self):
-        return self.payment.get(payment_json_format['amount'])
+        return self.get_captures()[0].get(authorization_format['amount_cents']) if hasattr(self, 'authorization') else self.payment.get(payment_json_format['amount'])
+
+    def get_authorization_types(self):
+        return self.authorization.get(authorization_format['authorization_types'])
+
+    def get_rewards(self):
+        return self.authorization.get(authorization_format['rewards'])
+
+    def get_is_venmo_card(self):
+        return self.authorization.get(authorization_format['is_venmo_card'])
+
+    def get_decline(self):
+        return self.authorization.get(authorization_format['decline'])
+
+    def get_payment_method(self):
+        return self.authorization.get(authorization_format['payment_method'])
+    
+    def get_acknowledged(self):
+        return self.authorization.get(authorization_format['acknowledged'])
+
+    def get_atm_fees(self):
+        return self.authorization.get(authorization_format['atm_fees'])
+
+    def get_rewards_earned(self):
+        return self.authorization.get(authorization_format['rewards_earned'])
+
+    def get_descriptor(self):
+        return self.authorization.get(authorization_format['descriptor'])
+
+    def get_captures(self):
+        return self.authorization.get(authorization_format['captures'])
+
+    def get_point_of_sale(self):
+        return self.authorization.get(authorization_format['point_of_sale'])
 
 
 transaction_json_format = {
@@ -95,7 +137,8 @@ transaction_json_format = {
     "comments": "comments",
     "comments_list": "data",
     "likes": "likes",
-    "transaction_type": "type"
+    "transaction_type": "type",
+    "authorization": "authorization",
 }
 payment_json_format = {
     "status": "status",
@@ -106,6 +149,77 @@ payment_json_format = {
     "note": "note",
     'type': 'action',
     'amount': 'amount'
+}
+authorization_format = {
+    "status": "status",
+    "merchant": "merchant",
+    "authorization_types": "authorization_types",
+    "rewards": "rewards",
+    "is_venmo_card": "is_venmo_card",
+    "decline": "decline",
+    "payment_method": "payment_method",
+    "story_id": "story_id",
+    # "created_at": "created_at", # Duplicate
+    "acknowledged": "acknowledged",
+    "atm_fees": "atm_fees",
+    "rewards_earned": "rewards_earned",
+    "descriptor": "descriptor",
+    "amount": "amount",
+    "user": "user",
+    "captures": "captures",
+    # "id": "id", # Duplicate
+    "point_of_sale": "point_of_sale",
+    "app": "app",
+    "amount_cents": "amount_cents",
+}
+
+
+class MerchantParser:
+    def __init__(self, json):
+
+        if not json:
+            return
+
+        self.json = json
+    
+    def get_merchant_id(self):
+        return self.json.get(merchant_json_format['merchant_id'])
+    
+    def get_braintree_merchant_id(self):
+        return self.json.get(merchant_json_format['braintree_id'])
+
+    def get_paypal_merchant_id(self):
+        return self.json.get(merchant_json_format['paypal_id'])
+
+    def get_display_name(self):
+        return self.json.get(merchant_json_format['display_name'])
+
+    def get_is_subscription(self):
+        return self.json.get(merchant_json_format['is_sub'])
+
+    def get_image_url(self):
+        return self.json.get(merchant_json_format['img_url'])
+
+    def get_image_datetime_updated(self):
+        return self.json.get(merchant_json_format['img_updated'])
+
+    def get_datetime_updated(self):
+        return self.json.get(merchant_json_format['updated'])
+
+    def get_datetime_created(self):
+        return self.json.get(merchant_json_format['created'])
+
+
+merchant_json_format = {
+    "merchant_id": "id",
+    "braintree_id": "braintree_merchant_id",
+    "paypal_id": "paypal_merchant_id",
+    "display_name": "display_name",
+    "is_sub": "is_subscription",
+    "img_url": "image_url",
+    "img_updated": "image_datetime_updated",
+    "updated": "datetime_updated",
+    "created": "datetime_created",
 }
 
 

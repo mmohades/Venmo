@@ -1,4 +1,4 @@
-from venmo_api import string_to_timestamp, BaseModel, User, Comment, get_phone_model_from_json, JSONSchema
+from venmo_api import string_to_timestamp, BaseModel, User, Merchant, Comment, get_phone_model_from_json, JSONSchema
 from enum import Enum
 
 
@@ -63,35 +63,60 @@ class Transaction(BaseModel):
         transaction_type = TransactionType(parser.get_transaction_type())
 
         # Currently only handles Payment-type transactions
-        if transaction_type is not TransactionType.PAYMENT:
-            return
+        if transaction_type is TransactionType.PAYMENT:
+            date_created = string_to_timestamp(parser.get_date_created())
+            date_updated = string_to_timestamp(parser.get_date_updated())
+            date_completed = string_to_timestamp(parser.get_date_completed())
+            target = User.from_json(json=parser.get_target())
+            actor = User.from_json(json=parser.get_actor())
+            device_used = get_phone_model_from_json(parser.get_actor_app())
 
-        date_created = string_to_timestamp(parser.get_date_created())
-        date_updated = string_to_timestamp(parser.get_date_updated())
-        date_completed = string_to_timestamp(parser.get_date_completed())
-        target = User.from_json(json=parser.get_target())
-        actor = User.from_json(json=parser.get_actor())
-        device_used = get_phone_model_from_json(parser.get_actor_app())
+            comments_list = parser.get_comments()
+            comments = [Comment.from_json(json=comment) for comment in comments_list] if comments_list else []
 
-        comments_list = parser.get_comments()
-        comments = [Comment.from_json(json=comment) for comment in comments_list] if comments_list else []
+            return cls(story_id=parser.get_story_id(),
+                    payment_id=parser.get_payment_id(),
+                    date_completed=date_completed,
+                    date_created=date_created,
+                    date_updated=date_updated,
+                    payment_type=parser.get_type(),
+                    amount=parser.get_amount(),
+                    audience=parser.get_audience(),
+                    note=parser.get_story_note(),
+                    status=parser.get_status(),
+                    device_used=device_used,
+                    actor=actor,
+                    target=target,
+                    comments=comments,
+                    json=json)
+        elif transaction_type is TransactionType.AUTHORIZATION:
+            date_created = string_to_timestamp(parser.get_date_created())
+            date_updated = string_to_timestamp(parser.get_date_updated())
+            date_completed = string_to_timestamp(parser.get_date_updated()) # Consider a transaction completed as of it's last update by merchant.
+            target = Merchant.from_json(json=parser.get_target())
+            actor = User.from_json(json=parser.get_actor())
+            device_used = get_phone_model_from_json(parser.get_actor_app())
 
-        return cls(story_id=parser.get_story_id(),
-                   payment_id=parser.get_payment_id(),
-                   date_completed=date_completed,
-                   date_created=date_created,
-                   date_updated=date_updated,
-                   payment_type=parser.get_type(),
-                   amount=parser.get_amount(),
-                   audience=parser.get_audience(),
-                   note=parser.get_story_note(),
-                   status=parser.get_status(),
-                   device_used=device_used,
-                   actor=actor,
-                   target=target,
-                   comments=comments,
-                   json=json)
+            comments_list = parser.get_comments()
+            comments = [Comment.from_json(json=comment) for comment in comments_list] if comments_list else []
 
+            return cls(story_id=parser.get_story_id(),
+                    payment_id='',
+                    date_completed=date_completed,
+                    date_created=date_created,
+                    date_updated=date_updated,
+                    payment_type='authorization',
+                    amount=parser.get_amount()/100,
+                    audience=parser.get_audience(),
+                    note=parser.get_story_note(),
+                    status=parser.get_status(),
+                    device_used=device_used,
+                    actor=actor,
+                    target=target,
+                    comments=comments,
+                    json=json)
+        else:
+            pass
 
 class TransactionType(Enum):
     PAYMENT = 'payment'
