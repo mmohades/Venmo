@@ -1,0 +1,12 @@
+# This workflow will lint code changes using black when code is pushed to the repository and when making pull requests
+# For more information see: https://black.readthedocs.io/en/stable/integrations/github_actions.html
+name: Lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
