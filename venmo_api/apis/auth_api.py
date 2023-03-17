@@ -1,4 +1,4 @@
-from venmo_api import random_device_id, warn, confirm, AuthenticationFailedError, ApiClient
+from venmo_api import random_device_id, message, warn, confirm, AuthenticationFailedError, ApiClient
 
 
 class AuthenticationApi(object):
@@ -11,7 +11,7 @@ class AuthenticationApi(object):
         self.__device_id = device_id or random_device_id()
         self.__api_client = api_client or ApiClient()
 
-    def login_with_credentials_cli(self, username: str, password: str) -> str:
+    def login_with_credentials_cli(self, username: str, password: str, quiet: bool=False) -> str:
         """
         Pass your username and password to get an access_token for using the API.
         :param username: <str> Phone, email or username
@@ -20,23 +20,26 @@ class AuthenticationApi(object):
         """
 
         # Give warnings to the user about device-id and token expiration
-        warn("IMPORTANT: Take a note of your device-id to avoid 2-factor-authentication for your next login.")
-        print(f"device-id: {self.__device_id}")
-        warn("IMPORTANT: Your Access Token will NEVER expire, unless you logout manually (client.log_out(token)).\n"
-             "Take a note of your token, so you don't have to login every time.\n")
+        if not quiet:
+            warn("IMPORTANT: Take a note of your device-id to avoid 2-factor-authentication for your next login.")
+            message(f"device-id: {self.__device_id}")
+            warn("IMPORTANT: Your Access Token will NEVER expire, unless you logout manually (client.log_out(token)).")
+            warn("Take a note of your token, so you don't have to login every time.")
 
         response = self.authenticate_using_username_password(username, password)
 
         # if two-factor error
         if response.get('body').get('error'):
+            # note: this should print to stderr even if `quiet=True`
             access_token = self.__two_factor_process_cli(response=response)
             self.trust_this_device()
         else:
             access_token = response['body']['access_token']
 
-        confirm("Successfully logged in. Note your token and device-id")
-        print(f"access_token: {access_token}\n"
-             f"device-id: {self.__device_id}")
+        if not quiet:
+            confirm("Successfully logged in. Note your token and device-id")
+            message(f"access_token: {access_token}")
+            message(f"device-id: {self.__device_id}")
 
         return access_token
 
@@ -162,7 +165,7 @@ class AuthenticationApi(object):
                                    method='POST')
 
         confirm(f"Successfully added your device id to the list of the trusted devices.")
-        print(f"Use the same device-id: {self.__device_id} next time to avoid 2-factor-auth process.")
+        message(f"Use the same device-id: {self.__device_id} next time to avoid 2-factor-auth process.")
 
     def get_device_id(self):
         return self.__device_id
