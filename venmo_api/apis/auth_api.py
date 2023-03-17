@@ -1,4 +1,4 @@
-from venmo_api import random_device_id, warn, confirm, AuthenticationFailedError, ApiClient
+from venmo_api import random_device_id, message, warn, confirm, AuthenticationFailedError, ApiClient
 
 
 class AuthenticationApi(object):
@@ -22,9 +22,9 @@ class AuthenticationApi(object):
         # Give warnings to the user about device-id and token expiration
         if not quiet:
             warn("IMPORTANT: Take a note of your device-id to avoid 2-factor-authentication for your next login.")
-            print(f"device-id: {self.__device_id}")
-            warn("IMPORTANT: Your Access Token will NEVER expire, unless you logout manually (client.log_out(token)).\n"
-                "Take a note of your token, so you don't have to login every time.\n")
+            message(f"device-id: {self.__device_id}")
+            warn("IMPORTANT: Your Access Token will NEVER expire, unless you logout manually (client.log_out(token)).")
+            warn("Take a note of your token, so you don't have to login every time.")
 
         response = self.authenticate_using_username_password(username, password)
 
@@ -38,8 +38,8 @@ class AuthenticationApi(object):
 
         if not quiet:
             confirm("Successfully logged in. Note your token and device-id")
-            print(f"access_token: {access_token}\n"
-                f"device-id: {self.__device_id}")
+            message(f"access_token: {access_token}")
+            message(f"device-id: {self.__device_id}")
 
         return access_token
 
@@ -165,7 +165,7 @@ class AuthenticationApi(object):
                                    method='POST')
 
         confirm(f"Successfully added your device id to the list of the trusted devices.")
-        print(f"Use the same device-id: {self.__device_id} next time to avoid 2-factor-auth process.")
+        message(f"Use the same device-id: {self.__device_id} next time to avoid 2-factor-auth process.")
 
     def get_device_id(self):
         return self.__device_id

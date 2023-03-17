@@ -1,3 +1,4 @@
+import sys
 from venmo_api import ArgumentMissingError, User, Page
 from enum import Enum
 from typing import Dict, List
@@ -94,22 +95,30 @@ class Colors(Enum):
     UNDERLINE = '\033[4m'
 
 
-def warn(message):
+def warn(message: str) -> None:
     """
     print message in Red Color
     :param message:
     :return:
     """
-    print(Colors.WARNING.value + message + Colors.ENDC.value)
+    message(Colors.WARNING.value + message + Colors.ENDC.value)
 
 
-def confirm(message):
+def confirm(message: str) -> None:
     """
     print message in Blue Color
     :param message:
     :return:
     """
-    print(Colors.OKBLUE.value + message + Colors.ENDC.value)
+    message(Colors.OKBLUE.value + message + Colors.ENDC.value)
+
+def message(message: str) -> None:
+    """
+    print message for user
+    : param message:
+    :return:
+    """
+    print(message, file=sys.stderr)
 
 
 def get_user_id(user, user_id):
