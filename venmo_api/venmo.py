@@ -27,7 +27,7 @@ class Client(object):
         return self.__profile
 
     @staticmethod
-    def get_access_token(username: str, password: str, device_id: str = None) -> str:
+    def get_access_token(username: str, password: str, device_id: str = None, quiet: bool=False) -> str:
         """
         Log in using your credentials and get an access_token to use in the API
         :param username: <str> Can be username, phone number (without +1) or email address.
@@ -37,7 +37,7 @@ class Client(object):
         :return: <str> access_token
         """
         authn_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
-        return authn_api.login_with_credentials_cli(username=username, password=password)
+        return authn_api.login_with_credentials_cli(username=username, password=password, quiet=quiet)
 
     @staticmethod
     def log_out(access_token) -> bool:
