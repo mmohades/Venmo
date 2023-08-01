@@ -123,7 +123,9 @@ class AuthenticationApi(object):
                                             "(check your password)")
         
         self.send_text_otp(otp_secret=otp_secret)
-        user_otp = self.__check_otp_validity(otp_func());
+        user_otp = otp_func()
+        while not self.__check_otp_validity(user_otp):
+            user_otp = otp_func()
         
         access_token = self.authenticate_using_otp(user_otp, otp_secret)
         self.__api_client.update_access_token(access_token=access_token)
@@ -232,11 +234,10 @@ class AuthenticationApi(object):
 
         return otp
     
-    
     @staticmethod
     def __check_otp_validity(otp: str):
     
         if len(otp) >= 6 and otp.isdigit():
-            return otp
+            return True
         else:
-            return __ask_user_for_otp_password()
+            return False
