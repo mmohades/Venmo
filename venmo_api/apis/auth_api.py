@@ -1,4 +1,5 @@
 from venmo_api import random_device_id, warn, confirm, AuthenticationFailedError, ApiClient
+from collections.abc import Callable, Awaitable
 
 
 class AuthenticationApi(object):
@@ -39,6 +40,37 @@ class AuthenticationApi(object):
              f"device-id: {self.__device_id}")
 
         return access_token
+    
+    def login_with_credentials_func(self, username: str, password: str, otp_func: Callable[[], str]) -> str:
+        """
+        Pass your username and password to get an access_token for using the API.
+        :param username: <str> Phone, email or username
+        :param password: <str> Your account password to login
+        :param otp_func: <Callable[[], str]> Function that returns the OTP provided to the user
+        :return: <str>
+        """
+        
+        # Give warnings to the user about device-id and token expiration
+        warn("IMPORTANT: Take a note of your device-id to avoid 2-factor-authentication for your next login.")
+        print(f"device-id: {self.__device_id}")
+        warn("IMPORTANT: Your Access Token will NEVER expire, unless you logout manually (client.log_out(token)).\n"
+             "Take a note of your token, so you don't have to login every time.\n")
+        
+        response = self.authenticate_using_username_password(username, password)
+        
+        # if two-factor error
+        if response.get('body').get('error'):
+            access_token = self.__two_factor_process_func(response=response, otp_func=otp_func)
+            
+            self.trust_this_device()
+        else:
+            access_token = response['body']['access_token']
+            
+        confirm("Successfully logged in. Note your token and device-id")
+        print(f"access_token: {access_token}\n"
+             f"device-id: {self.__device_id}")
+        
+        return access_token
 
     @staticmethod
     def log_out(access_token: str) -> bool:
@@ -75,6 +107,29 @@ class AuthenticationApi(object):
         access_token = self.authenticate_using_otp(user_otp, otp_secret)
         self.__api_client.update_access_token(access_token=access_token)
 
+        return access_token
+
+    def __two_factor_process_func(self, response: dict, otp_func: Callable[[], str] = None) -> str:
+        """
+        Get response from authenticate_with_username_password for a CLI two-factor process
+        :param response:
+        :param otp_func:
+        :return: <str> access_token
+        """
+        
+        otp_secret = response['headers'].get('venmo-otp-secret')
+        if not otp_secret:
+            raise AuthenticationFailedError("Failed to get the otp-secret for the 2-factor authentication process. "
+                                            "(check your password)")
+        
+        self.send_text_otp(otp_secret=otp_secret)
+        user_otp = otp_func()
+        while not self.__check_otp_validity(user_otp):
+            user_otp = otp_func()
+        
+        access_token = self.authenticate_using_otp(user_otp, otp_secret)
+        self.__api_client.update_access_token(access_token=access_token)
+        
         return access_token
 
     def authenticate_using_username_password(self, username: str, password: str) -> dict:
@@ -178,3 +233,11 @@ class AuthenticationApi(object):
             otp = input("Enter OTP that you received on your phone from Venmo: (It must be 6 digits)\n")
 
         return otp
+    
+    @staticmethod
+    def __check_otp_validity(otp: str):
+    
+        if len(otp) >= 6 and otp.isdigit():
+            return True
+        else:
+            return False

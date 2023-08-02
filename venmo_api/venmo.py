@@ -1,4 +1,5 @@
 from venmo_api import ApiClient, UserApi, PaymentApi, AuthenticationApi, validate_access_token
+from collections.abc import Callable, Awaitable
 
 
 class Client(object):
@@ -27,17 +28,23 @@ class Client(object):
         return self.__profile
 
     @staticmethod
-    def get_access_token(username: str, password: str, device_id: str = None) -> str:
+    def get_access_token(username: str, password: str, device_id: str = None, otp_func: Callable[[], str] = None) -> str:
         """
         Log in using your credentials and get an access_token to use in the API
         :param username: <str> Can be username, phone number (without +1) or email address.
         :param password: <str> Account's password
         :param device_id: <str> [optional] A valid device-id.
+        :param otp_func: <Callable[[], str]> [optional] Function to be called when API asks for OTP.
 
         :return: <str> access_token
         """
         authn_api = AuthenticationApi(api_client=ApiClient(), device_id=device_id)
-        return authn_api.login_with_credentials_cli(username=username, password=password)
+        if otp_func == None:
+            return authn_api.login_with_credentials_cli(username=username, password=password)
+        
+        else:
+            return authn_api.login_with_credentials_func(username=username, password=password, otp_func=otp_func)
+        
 
     @staticmethod
     def log_out(access_token) -> bool:
