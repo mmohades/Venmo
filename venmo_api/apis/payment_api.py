@@ -17,7 +17,7 @@ class PaymentApi(object):
             "not_enough_balance_error": 13006
         }
 
-    def get_charge_payments(self, limit=100000, callback=None):
+    def get_charge_payments(self, limit=100000, callback=None, paymentId=None):
         """
         Get a list of charge ongoing payments (pending request money)
         :param limit:
@@ -26,7 +26,8 @@ class PaymentApi(object):
         """
         return self.__get_payments(action="charge",
                                    limit=limit,
-                                   callback=callback)
+                                   callback=callback,
+                                   paymentId=paymentId)
 
     def get_pay_payments(self, limit=100000, callback=None):
         """
@@ -169,7 +170,7 @@ class PaymentApi(object):
                                           method='PUT',
                                           ok_error_codes=list(self.__payment_error_codes.values())[:-1])
 
-    def __get_payments(self, action, limit, callback=None):
+    def __get_payments(self, action, limit, callback=None, paymentId=None):
         """
         Get a list of ongoing payments with the given action
         :return:
@@ -178,6 +179,8 @@ class PaymentApi(object):
                                          data_type=Payment)
 
         resource_path = '/payments'
+        if(paymentId is not None):
+            resource_path+=('/'+paymentId)
         parameters = {
             "action": action,
             "actor": self.__profile.id,
@@ -250,7 +253,7 @@ class PaymentApi(object):
         if callback:
             return
         # if no exception raises, then it was successful
-        return True
+        return result['body']['data']['payment']['id']
 
     def get_default_payment_method(self) -> PaymentMethod:
         """
