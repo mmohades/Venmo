@@ -21,7 +21,7 @@ class ApiClient(object):
         self.access_token = access_token
         self.configuration = {"host": "https://api.venmo.com/v1"}
 
-        self.default_headers = {"User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0)"}
+        self.default_headers = {"User-Agent": "Venmo/10.48.0 (iPhone; iOS 17.6.1; Scale/3.0)"}
         if self.access_token:
             self.default_headers.update({"Authorization": self.access_token})
 
