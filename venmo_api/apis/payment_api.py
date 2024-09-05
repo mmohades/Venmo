@@ -3,6 +3,8 @@ from venmo_api import ApiClient, Payment, ArgumentMissingError, AlreadyRemindedP
     User, PaymentMethod, PaymentRole, PaymentPrivacy, deserialize, wrap_callback, get_user_id
 from typing import List, Union
 
+from venmo_api.models.eligibility_token import EligibilityToken
+
 
 class PaymentApi(object):
 
@@ -179,9 +181,13 @@ class PaymentApi(object):
             "amount": amount,
         }
 
-        return self.__api_client.call_api(resource_path=resource_path,
+        response = self.__api_client.call_api(resource_path=resource_path,
                                               body=body,
                                               method='POST')
+        if callback:
+            return
+
+        return deserialize(response=response, data_type=EligibilityToken)
 
     def __update_payment(self, action, payment_id):
 
@@ -226,6 +232,7 @@ class PaymentApi(object):
                                 funding_source_id: str = None,
                                 privacy_setting: str = PaymentPrivacy.PRIVATE.value,
                                 target_user_id: int = None, target_user: User = None,
+                                eligibility_token: str = None,
                                 callback=None) -> Union[bool, None]:
         """
         Generic method for sending and requesting money
@@ -236,6 +243,7 @@ class PaymentApi(object):
         :param privacy_setting:
         :param target_user_id:
         :param target_user:
+        :param eligibility_token:
         :param callback:
         :return:
         """
@@ -255,6 +263,10 @@ class PaymentApi(object):
         if is_send_money:
             if not funding_source_id:
                 funding_source_id = self.get_default_payment_method().id
+            if not eligibility_token:
+                eligibility_token = self.__get_eligibility_token(amount, note, int(target_user_id)).eligibility_token
+
+            body.update({"eligibility_token": eligibility_token})
             body.update({"funding_source_id": funding_source_id})
 
         resource_path = '/payments'
