@@ -53,7 +53,7 @@ class Payment(BaseModel):
             target=User.from_json(parser.get_target()),
             action=parser.get_action(),
             amount=parser.get_amount(),
-            audience=parser.get_amount(),
+            audience=parser.get_audience(),
             date_created=string_to_timestamp(parser.get_date_created()),
             date_reminded=string_to_timestamp(parser.get_date_reminded()),
             date_completed=string_to_timestamp(parser.get_date_completed()),
