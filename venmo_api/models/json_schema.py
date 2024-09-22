@@ -24,6 +24,14 @@ class JSONSchema:
     def mention(json):
         return MentionParser(json)
 
+    @staticmethod
+    def eligibility_token(json):
+        return EligibilityTokenParser(json)
+
+    @staticmethod
+    def fee(json):
+        return FeeParser(json)
+
 
 class TransactionParser:
 
@@ -323,4 +331,58 @@ class MentionParser:
 mention_json_format = {
     "username": "username",
     "user": "user"
+}
+
+class EligibilityTokenParser:
+    def __init__(self, json):
+        self.json = json
+
+    def get_eligibility_token(self):
+        return self.json.get(eligibility_token_json_format['eligibility_token'])
+
+    def get_eligible(self):
+        return self.json.get(eligibility_token_json_format['eligible'])
+
+    def get_fees(self):
+        return self.json.get(eligibility_token_json_format['fees'])
+
+    def get_fee_disclaimer(self):
+        return self.json.get(eligibility_token_json_format['fee_disclaimer'])
+
+eligibility_token_json_format = {
+    'eligibility_token': 'eligibility_token',
+    'eligible': 'eligible',
+    'fees': 'fees',
+    'fee_disclaimer': 'fee_disclaimer'
+}
+
+class FeeParser:
+    def __init__(self, json):
+        self.json = json
+
+    def get_product_uri(self):
+        return self.json.get(fee_json_format['product_uri'])
+
+    def get_applied_to(self):
+        return self.json.get(fee_json_format['applied_to'])
+
+    def get_base_fee_amount(self):
+        return self.json.get(fee_json_format['base_fee_amount'])
+
+    def get_fee_percentage(self):
+        return self.json.get(fee_json_format['fee_percentage'])
+
+    def get_calculated_fee_amount_in_cents(self):
+        return self.json.get(fee_json_format['calculated_fee_amount_in_cents'])
+
+    def get_fee_token(self):
+        return self.json.get(fee_json_format['fee_token'])
+
+fee_json_format = {
+    'product_uri': 'product_uri',
+    'applied_to': 'applied_to',
+    'base_fee_amount': 'base_fee_amount',
+    'fee_percentage': 'fee_percentage',
+    'calculated_fee_amount_in_cents': 'calculated_fee_amount_in_cents',
+    'fee_token': 'fee_token'
 }

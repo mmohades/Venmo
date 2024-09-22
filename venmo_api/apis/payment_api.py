@@ -3,6 +3,8 @@ from venmo_api import ApiClient, Payment, ArgumentMissingError, AlreadyRemindedP
     User, PaymentMethod, PaymentRole, PaymentPrivacy, deserialize, wrap_callback, get_user_id
 from typing import List, Union
 
+from venmo_api.models.eligibility_token import EligibilityToken
+
 
 class PaymentApi(object):
 
@@ -155,6 +157,38 @@ class PaymentApi(object):
                                             target_user=target_user,
                                             callback=callback)
 
+    def __get_eligibility_token(self, amount: float, note: str, target_id: int = None, funding_source_id: str = None,
+                                action: str = "pay",
+                                country_code: str = "1", target_type: str = "user_id", callback=None):
+        """
+        Generate eligibility token which is needed in payment requests
+        :param amount: <float> amount of money to be requested
+        :param note: <str> message/note of the transaction
+        :param target_id: <int> the user id of the person you are sending money to
+        :param funding_source_id: <str> Your payment_method id for this payment
+        :param action: <str> action that eligibility token is used for
+        :param country_code: <str> country code, not sure what this is for
+        :param target_type: <str> set by default to user_id, but there are probably other target types
+        """
+        resource_path = '/protection/eligibility'
+        body = {
+            "funding_source_id": self.get_default_payment_method().id if not funding_source_id else funding_source_id,
+            "action": action,
+            "country_code": country_code,
+            "target_type": target_type,
+            "note": note,
+            "target_id": get_user_id(user=None, user_id=target_id),
+            "amount": amount,
+        }
+
+        response = self.__api_client.call_api(resource_path=resource_path,
+                                              body=body,
+                                              method='POST')
+        if callback:
+            return
+
+        return deserialize(response=response, data_type=EligibilityToken)
+
     def __update_payment(self, action, payment_id):
 
         if not payment_id:
@@ -198,6 +232,7 @@ class PaymentApi(object):
                                 funding_source_id: str = None,
                                 privacy_setting: str = PaymentPrivacy.PRIVATE.value,
                                 target_user_id: int = None, target_user: User = None,
+                                eligibility_token: str = None,
                                 callback=None) -> Union[bool, None]:
         """
         Generic method for sending and requesting money
@@ -208,6 +243,7 @@ class PaymentApi(object):
         :param privacy_setting:
         :param target_user_id:
         :param target_user:
+        :param eligibility_token:
         :param callback:
         :return:
         """
@@ -227,6 +263,10 @@ class PaymentApi(object):
         if is_send_money:
             if not funding_source_id:
                 funding_source_id = self.get_default_payment_method().id
+            if not eligibility_token:
+                eligibility_token = self.__get_eligibility_token(amount, note, int(target_user_id)).eligibility_token
+
+            body.update({"eligibility_token": eligibility_token})
             body.update({"funding_source_id": funding_source_id})
 
         resource_path = '/payments'
