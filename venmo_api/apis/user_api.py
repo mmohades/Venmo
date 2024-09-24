@@ -137,19 +137,25 @@ class UserApi(object):
     def get_user_transactions(self, user_id: str = None, user: User = None,
                               callback=None,
                               limit: int = 50,
+                              after_id=None,
                               before_id=None) -> Union[Page, None]:
         """
-        Get ([user_id]'s or [user]'s) transactions visible to yourself as a list of <Transaction>s
+        Get ([user_id]'s or [user]'s) transactions visible to yourself as a list of <Transaction>s.
+        Get a range of transactions when after_id < before_id.
         :param user_id:
         :param user:
         :param callback:
         :param limit:
-        :param before_id:
+        :param after_id: <str>, Story transaction id; example: '4161503637825867150'
+        :param before_id: <str>, Story transaction id; example: '4161503637825867155'
         :return:
         """
         user_id = get_user_id(user, user_id)
 
         params = {'limit': limit}
+        if after_id:
+            params['after_id'] = after_id
+
         if before_id:
             params['before_id'] = before_id
 
@@ -176,23 +182,29 @@ class UserApi(object):
                                           user_two: User = None,
                                           callback=None,
                                           limit: int = 50,
+                                          after_id=None,
                                           before_id=None) -> Union[Page, None]:
         """
         Get the transactions between two users. Note that user_one must be the owner of the access token.
         Otherwise it raises an unauthorized error.
+        Get a range of transactions when after_id < before_id.
         :param user_id_one:
         :param user_id_two:
         :param user_one:
         :param user_two:
         :param callback:
         :param limit:
-        :param before_id:
+        :param after_id: <str>, Story transaction id; example: '4161503637825867150'
+        :param before_id: <str>, Story transaction id; example: '4161503637825867155'
         :return:
         """
         user_id_one = get_user_id(user_one, user_id_one)
         user_id_two = get_user_id(user_two, user_id_two)
 
         params = {'limit': limit}
+        if after_id:
+            params['after_id'] = after_id
+
         if before_id:
             params['before_id'] = before_id
 
