@@ -91,13 +91,14 @@ class UserApi(object):
 
     def get_user_by_username(self, username: str) -> Union[User, None]:
         """
-        Get the user profile with [username]
+        Get the user profile with case-insensitive [username]
         :param username:
         :return user: <User> <NoneType>
         """
+        username = username.lower()
         users = self.search_for_users(query=username, username=True)
         for user in users:
-            if user.username == username:
+            if user.username.lower() == username:
                 return user
 
         # username not found
