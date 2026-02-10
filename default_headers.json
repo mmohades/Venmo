@@ -1,6 +1,6 @@
 {
   "Host": "api.venmo.com",
-  "User-Agent": "Venmo/10.77.0 (iPhone; iOS 18.6.2; Scale/3.0)",
+  "User-Agent": "Venmo/26.1.0 (iPhone; iOS 18.6.2; Scale/3.0)",
   "Accept": "application/json; charset=utf-8",
   "Accept-Language": "en-US;q=1.0",
   "Accept-Encoding": "gzip;q=1.0,compress;q=0.5",

@@ -37,7 +37,6 @@ class PaymentApi:
     def __init__(
         self, profile: User, api_client: ApiClient, balance: float | None = None
     ):
-        super().__init__()
         self._profile = profile
         self._balance = balance
         self._api_client = api_client
@@ -229,10 +228,11 @@ class PaymentApi:
         Returns:
             TransferPostResponse: object signifying successful transfer with details.
         """
-        if amount is None and self._balance is not None:
-            amount = self._balance
-        else:
-            raise ValueError("must pass a transfer amount if no balance available")
+        if amount is None:
+            if self._balance is not None:
+                amount = self._balance
+            else:
+                raise ValueError("must pass a transfer amount if no balance available")
 
         amount_cents = round(amount * 100)
         body = {
@@ -257,7 +257,7 @@ class PaymentApi:
             if not p_method:
                 continue
 
-            if p_method.role == PaymentMethodRole.DEFAULT:
+            if p_method.peer_payment_role == PaymentMethodRole.DEFAULT:
                 return p_method
 
         raise NoPaymentMethodFoundError()

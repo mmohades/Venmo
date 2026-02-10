@@ -13,7 +13,6 @@ class UserApi:
     """
 
     def __init__(self, api_client: ApiClient):
-        super().__init__()
         self.__api_client = api_client
         self._profile = None
         self._balance = None

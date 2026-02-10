@@ -86,7 +86,6 @@ class Client:
             api_client (ApiClient | None, optional): Alternative to the above 2.
                 Defaults to None.
         """
-        super().__init__()
         if api_client is None:
             self.__api_client = ApiClient(
                 access_token=access_token, device_id=device_id
