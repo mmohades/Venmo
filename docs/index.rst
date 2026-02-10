@@ -59,14 +59,6 @@ The following is an example of initializing and working with the api client.
    for user in users:
        print(user.username)
 
-   # Or pass a callback to make it multi-threaded
-   def callback(users):
-       for user in users:
-           print(user.username)
-
-   client.user.search_for_users(query="peter",
-                                callback=callback,
-                                limit=10)
 
 Revoke token
 """"""""""""
@@ -111,13 +103,8 @@ Getting a user's transactions (only the ones that are visible to you, e.g, their
 
 .. code-block:: python
 
-   def callback(transactions_list):
-       for transaction in transactions_list:
-           print(transaction)
-
-   # callback is optional. Max number of transactions per request is 50.
-   client.user.get_user_transactions(user_id='0000000000000000000',
-                                        callback=callback)
+   # Max number of transactions per request is 50.
+   client.user.get_user_transactions(user_id='0000000000000000000')
 
 Friends list
 """"""""""""

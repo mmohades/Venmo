@@ -1,0 +1,48 @@
+[project]
+name = "venmo-api"
+version = "1.0.0"
+description = "Venmo API client for Python"
+readme = "README.md"
+authors = [
+    { name = "Mark Mohades"},
+    { name = "Joseph Charles"},
+    { name = "Josh Hubert", email= "102703352+joshhubert-dsp@users.noreply.github.com" }
+]
+maintainers = [
+    { name = "Josh Hubert", email= "102703352+joshhubert-dsp@users.noreply.github.com" }
+]
+license = "GPL-3.0-only"
+license-files = [
+    "LICENSE"
+]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Operating System :: OS Independent',
+    'Natural Language :: English',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Internet',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13'
+]
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "devtools>=0.12.2",
+    "orjson>=3.11.3",
+    "pydantic>=2.12.4",
+    "requests>=2.32.5",
+    "rich>=14.2.0",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "." }
+
+[tool.setuptools.packages.find]
+where = ["."]

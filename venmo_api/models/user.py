@@ -1,65 +1,55 @@
-from venmo_api import string_to_timestamp, BaseModel, JSONSchema
+from datetime import datetime
+from enum import StrEnum, auto
+
+from pydantic import BaseModel, EmailStr
+
+
+class PaymentPrivacy(StrEnum):
+    PRIVATE = auto()
+    PUBLIC = auto()
+    FRIENDS = auto()
+
+
+class FriendStatus(StrEnum):
+    FRIEND = auto()
+    NOT_FRIEND = auto()
+
+
+# TODO verify stuff that isn't personal
+class IdentityType(StrEnum):
+    PERSONAL = auto()
+    BUSINESS = auto()
+    CHARITY = auto()
+    UNKNOWN = auto()
+
+    @classmethod
+    def _missing_(cls, value):  # type: ignore[override]
+        """Gracefully handle new/unknown identity types coming from the API."""
+        if isinstance(value, str):
+            for member in cls:
+                if member.value == value.lower():
+                    return member
+            return cls.UNKNOWN
+        return None
 
 
 class User(BaseModel):
-
-    def __init__(self, user_id, username, first_name, last_name, display_name, phone,
-                 profile_picture_url, about, date_joined, is_group, is_active, json=None):
-        """
-        User model
-        :param user_id:
-        :param username:
-        :param first_name:
-        :param last_name:
-        :param display_name:
-        :param phone:
-        :param profile_picture_url:
-        :param about:
-        :param date_joined:
-        :param is_group:
-        :param is_active:
-        :param json: full_json
-        :return:
-        """
-        super().__init__()
-
-        self.id = user_id
-        self.username = username
-        self.first_name = first_name
-        self.last_name = last_name
-        self.display_name = display_name
-        self.phone = phone
-        self.profile_picture_url = profile_picture_url
-        self.about = about
-        self.date_joined = date_joined
-        self.is_group = is_group
-        self.is_active = is_active
-        self._json = json
-
-    @classmethod
-    def from_json(cls, json, is_profile=False):
-        """
-        init a new user form JSON
-        :param json:
-        :param is_profile:
-        :return:
-        """
-        if not json:
-            return
-
-        parser = JSONSchema.user(json, is_profile=is_profile)
-
-        date_joined_timestamp = string_to_timestamp(parser.get_date_created())
-
-        return cls(user_id=parser.get_user_id(),
-                   username=parser.get_username(),
-                   first_name=parser.get_first_name(),
-                   last_name=parser.get_last_name(),
-                   display_name=parser.get_full_name(),
-                   phone=parser.get_phone(),
-                   profile_picture_url=parser.get_picture_url(),
-                   about=parser.get_about(),
-                   date_joined=date_joined_timestamp,
-                   is_group=parser.get_is_group(),
-                   is_active=parser.get_is_active(),
-                   json=json)
+    about: str
+    date_joined: datetime
+    friends_count: int | None
+    is_active: bool
+    is_blocked: bool
+    friend_status: FriendStatus | None
+    profile_picture_url: str
+    username: str
+    trust_request: str | None  # TODO, so far just None
+    display_name: str
+    email: EmailStr | None = None
+    first_name: str
+    id: str
+    identity_type: IdentityType
+    is_group: bool
+    last_name: str
+    phone: str | None = None
+    is_payable: bool
+    audience: PaymentPrivacy

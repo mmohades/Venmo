@@ -1,99 +1,116 @@
-from venmo_api import User, Page, Transaction, deserialize, wrap_callback, get_user_id
-from typing import List, Union
+from venmo_api.apis.api_client import ApiClient
+from venmo_api.apis.api_util import ValidatedResponse, deserialize
+from venmo_api.models.page import Page
+from venmo_api.models.transaction import Transaction
+from venmo_api.models.user import User
 
 
-class UserApi(object):
-    def __init__(self, api_client):
-        super().__init__()
+class UserApi:
+    """API for querying users and transactions.
+
+    Args:
+        api_client (ApiClient): Logged in client instance to use for requests.
+    """
+
+    def __init__(self, api_client: ApiClient):
         self.__api_client = api_client
-        self.__profile = None
+        self._profile = None
+        self._balance = None
 
-    def get_my_profile(self, callback=None, force_update=False) -> Union[User, None]:
+    def get_my_profile(self, force_update=False) -> User:
+        """Get your profile info and return as a User.
+
+        Args:
+            force_update (bool, optional): Whether to require fetching updated data from
+                API. Defaults to False.
+
+        Returns:
+            User: Your profile.
         """
-        Get my profile info and return as a <User>
-        :return my_profile: <User>
+        if self._profile and not force_update:
+            return self._profile
+
+        response = self.__api_client.call_api(resource_path="/account", method="GET")
+        self._profile = deserialize(response, User, nested_response=["user"])
+        return self._profile
+
+    def get_my_balance(self, force_update=False) -> float:
+        """Get your current balance info and return as a float.
+
+        Args:
+            force_update (bool, optional): Whether to require fetching updated data from
+                API. Defaults to False.
+
+        Returns:
+            float: Your balance
         """
-        if self.__profile and not force_update:
-            return self.__profile
+        if self._balance and not force_update:
+            return self._balance
 
-        # Prepare the request
-        resource_path = '/account'
-        nested_response = ['user']
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=User,
-                                         nested_response=nested_response)
-        # Make the request
-        response = self.__api_client.call_api(resource_path=resource_path,
-                                              method='GET',
-                                              callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
+        response = self.__api_client.call_api(resource_path="/account", method="GET")
+        self._balance = deserialize(response, float, nested_response=["balance"])
+        return self._balance
 
-        self.__profile = deserialize(response=response, data_type=User, nested_response=nested_response)
-        return self.__profile
+    # --- USERS ---
 
-    def search_for_users(self, query: str, callback=None,
-                         offset: int = 0, limit: int = 50, username=False) -> Union[List[User], None]:
-        """
-        search for [query] in users
-        :param query:
-        :param callback:
-        :param offset:
-        :param limit:
-        :param username: default: False; Pass True if search is by username
-        :return users_list: <list> A list of <User> objects or empty
+    def search_for_users(
+        self,
+        query: str,
+        offset: int = 0,
+        limit: int = 50,
+        username: bool = False,
+    ) -> Page[User]:
+        """search for [query] in users
+
+        Args:
+            query (str): user search terms.
+            offset (int, optional): Page offset. Defaults to 0.
+            limit (int, optional): Maximum number of entries to return. Defaults to 50.
+            username (bool, optional): Pass True if search is by username. Defaults to False.
+
+        Returns:
+            Page[User]: A list of User objects or empty
         """
 
-        resource_path = '/users'
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=User)
-
-        params = {'query': query, 'limit': limit, 'offset': offset}
+        params = {"query": query, "limit": limit, "offset": offset}
         # update params for querying by username
-        if username or '@' in query:
-            params.update({'query': query.replace('@', ''), 'type': 'username'})
+        if username or "@" in query:
+            params.update({"query": query.replace("@", ""), "type": "username"})
 
-        response = self.__api_client.call_api(resource_path=resource_path, params=params,
-                                              method='GET', callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
+        response = self.__api_client.call_api(
+            resource_path="/users", params=params, method="GET"
+        )
+        return deserialize(response=response, data_type=User).set_method(
+            method=self.search_for_users,
+            kwargs={"query": query, "limit": limit},
+            current_offset=offset,
+        )
 
-        return deserialize(response=response,
-                           data_type=User).set_method(method=self.search_for_users,
-                                                      kwargs={"query": query, "limit": limit},
-                                                      current_offset=offset
-                                                      )
+    def get_user(self, user_id: str) -> User | None:
+        """Get the user profile with [user_id]
 
+        Args:
+            user_id (str): uuid for user, as returned by User.id.
 
-    def get_user(self, user_id: str, callback=None) -> Union[User, None]:
+        Returns:
+            User | None: the corresponding User, if any.
         """
-        Get the user profile with [user_id]
-        :param user_id: <str>, example: '2859950549165568970'
-        :param callback: <function>
-        :return user: <User> <NoneType>
-        """
+        response = self.__api_client.call_api(
+            resource_path=f"/users/{user_id}", method="GET"
+        )
+        try:
+            return deserialize(response=response, data_type=User)
+        except Exception:
+            return None
 
-        # Prepare the request
-        resource_path = f'/users/{user_id}'
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=User)
-        # Make the request
-        response = self.__api_client.call_api(resource_path=resource_path,
-                                              method='GET',
-                                              callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
+    def get_user_by_username(self, username: str) -> User | None:
+        """Search for the user profile with [username]
 
-        return deserialize(response=response, data_type=User)
+        Args:
+            username (str): username of User.
 
-    def get_user_by_username(self, username: str) -> Union[User, None]:
-        """
-        Get the user profile with [username]
-        :param username:
-        :return user: <User> <NoneType>
+        Returns:
+            User | None: The corresponding User, if any.
         """
         users = self.search_for_users(query=username, username=True)
         for user in users:
@@ -103,113 +120,171 @@ class UserApi(object):
         # username not found
         return None
 
-    def get_user_friends_list(self, user_id: str = None,
-                              user: User = None,
-                              callback=None,
-                              offset: int = 0,
-                              limit: int = 3337) -> Union[Page, None]:
+    def get_user_friends_list(
+        self,
+        user_id: str,
+        offset: int = 0,
+        limit: int = 3337,
+    ) -> Page[User]:
+        """Get [user_id]'s friends list as a list of Users
+
+        Args:
+            user_id (str): uuid for user, as returned by User.id.
+            offset (int, optional): Page offset. Defaults to 0.
+            limit (int, optional): Maximum number of entries to return. Defaults to 3337.
+
+        Returns:
+            Page[User]: A list of User objects or empty if no friends :(
         """
-        Get ([user_id]'s or [user]'s) friends list as a list of <User>s
-        :return users_list: <list> A list of <User> objects or empty
-        """
-        user_id = get_user_id(user, user_id)
         params = {"limit": limit, "offset": offset}
+        response = self.__api_client.call_api(
+            resource_path=f"/users/{user_id}/friends", method="GET", params=params
+        )
+        return deserialize(response=response, data_type=User).set_method(
+            method=self.get_user_friends_list,
+            kwargs={"user_id": user_id, "limit": limit},
+            current_offset=offset,
+        )
 
-        # Prepare the request
-        resource_path = f'/users/{user_id}/friends'
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=User)
-        # Make the request
-        response = self.__api_client.call_api(resource_path=resource_path,
-                                              method='GET', params=params,
-                                              callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
+    # --- TRANSACTIONS ---
 
-        return deserialize(
-            response=response,
-            data_type=User).set_method(method=self.get_user_friends_list,
-                                       kwargs={"user_id": user_id, "limit": limit},
-                                       current_offset=offset
-                                       )
+    def get_user_transactions(
+        self,
+        user_id: str,
+        social_only: bool = False,
+        public_only: bool = True,
+        limit: int = 50,
+        before_id: str | None = None,
+    ) -> Page[Transaction]:
+        """Get [user_id]'s transactions visible to you as a list of Transactions
 
-    def get_user_transactions(self, user_id: str = None, user: User = None,
-                              callback=None,
-                              limit: int = 50,
-                              before_id=None) -> Union[Page, None]:
+        Args:
+            user_id (str): uuid for user, as returned by User.id.
+            social_only (bool, optional): I think this means show only transactions
+                between personal accounts, not business/charity ones, but haven't
+                verified. Defaults to False.
+            public_only (bool, optional): I think this means show only transactions
+                the user has made public, but haven't verified. Defaults to True.
+            limit (int, optional): Maximum number of entries to return. Defaults to 50.
+            before_id (str | None, optional): Index for determining the page returned.
+                Defaults to None.
+
+        Returns:
+            Page[Transaction]: A list of Transaction objects.
         """
-        Get ([user_id]'s or [user]'s) transactions visible to yourself as a list of <Transaction>s
-        :param user_id:
-        :param user:
-        :param callback:
-        :param limit:
-        :param before_id:
-        :return:
-        """
-        user_id = get_user_id(user, user_id)
+        response = self._get_transactions(
+            user_id, social_only, public_only, limit, before_id
+        )
+        return deserialize(response, Transaction).set_method(
+            method=self.get_user_transactions,
+            kwargs={
+                "user_id": user_id,
+                "social_only": social_only,
+                "public_only": public_only,
+                "limit": limit,
+            },
+        )
 
-        params = {'limit': limit}
+    def get_friends_transactions(
+        self,
+        social_only: bool = False,
+        public_only: bool = True,
+        limit: int = 50,
+        before_id: str | None = None,
+    ) -> Page[Transaction]:
+        """Get your friends' transactions visible to you as a list of Transactions
+
+        Args:
+            social_only (bool, optional): I think this means show only transactions
+                between personal accounts, not business/charity ones, but haven't
+                verified. Defaults to False.
+            public_only (bool, optional): I think this means show only transactions
+                the user has made public, but haven't verified. Defaults to True.
+            limit (int, optional): Maximum number of entries to return. Defaults to 50.
+            before_id (str | None, optional): Index for determining the page returned.
+                Defaults to None.
+
+        Returns:
+            Page[Transaction]: A list of Transaction objects.
+        """
+        response = self._get_transactions(
+            "friends", social_only, public_only, limit, before_id
+        )
+        return deserialize(response, Transaction).set_method(
+            method=self.get_friends_transactions,
+            kwargs={
+                "social_only": social_only,
+                "public_only": public_only,
+                "limit": limit,
+            },
+        )
+
+    def get_transaction_between_two_users(
+        self,
+        user_id_one: str,
+        user_id_two: str,
+        social_only: bool = False,
+        public_only: bool = True,
+        limit: int = 50,
+        before_id: str | None = None,
+    ) -> Page[Transaction] | None:
+        """Get the transactions between two users. Note that user_one_id must be the owner
+        of the access token. Otherwise it raises an unauthorized error.
+
+        Args:
+            user_id_one (str): Your user uuid.
+            user_id_two (str): uuid of the other person
+            social_only (bool, optional): I think this means show only transactions
+                between personal accounts, not business/charity ones, but haven't
+                verified. Defaults to False.
+            public_only (bool, optional): I think this means show only transactions
+                the user has made public, but haven't verified. Defaults to True.
+            limit (int, optional): Maximum number of entries to return. Defaults to 50.
+            before_id (str | None, optional): Index for determining the page returned.
+                Defaults to None.
+
+        Returns:
+            Page[Transaction]: A list of Transaction objects.
+        """
+        response = self._get_transactions(
+            f"{user_id_one}/target-or-actor/{user_id_two}",
+            social_only,
+            public_only,
+            limit,
+            before_id,
+        )
+        return deserialize(response, Transaction).set_method(
+            method=self.get_transaction_between_two_users,
+            kwargs={
+                "user_id_one": user_id_one,
+                "user_id_two": user_id_two,
+                "social_only": social_only,
+                "public_only": public_only,
+                "limit": limit,
+            },
+        )
+
+    def _get_transactions(
+        self,
+        endpoint_suffix: str,
+        social_only: bool,
+        public_only: bool,
+        limit: int,
+        before_id: str | None,
+    ) -> ValidatedResponse | None:
+        """ """
+        params = {
+            "limit": limit,
+            "social_only": str(social_only).lower(),
+            "only_public_stories": str(public_only).lower(),
+        }
         if before_id:
-            params['before_id'] = before_id
+            params["before_id"] = before_id
 
-        # Prepare the request
-        resource_path = f'/stories/target-or-actor/{user_id}'
-
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=Transaction)
         # Make the request
-        response = self.__api_client.call_api(resource_path=resource_path,
-                                              method='GET', params=params,
-                                              callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
-
-        return deserialize(response=response,
-                           data_type=Transaction).set_method(method=self.get_user_transactions,
-                                                             kwargs={"user_id": user_id})
-
-    def get_transaction_between_two_users(self, user_id_one: str = None,
-                                          user_id_two: str = None,
-                                          user_one: User = None,
-                                          user_two: User = None,
-                                          callback=None,
-                                          limit: int = 50,
-                                          before_id=None) -> Union[Page, None]:
-        """
-        Get the transactions between two users. Note that user_one must be the owner of the access token.
-        Otherwise it raises an unauthorized error.
-        :param user_id_one:
-        :param user_id_two:
-        :param user_one:
-        :param user_two:
-        :param callback:
-        :param limit:
-        :param before_id:
-        :return:
-        """
-        user_id_one = get_user_id(user_one, user_id_one)
-        user_id_two = get_user_id(user_two, user_id_two)
-
-        params = {'limit': limit}
-        if before_id:
-            params['before_id'] = before_id
-
-        # Prepare the request
-        resource_path = f'/stories/target-or-actor/{user_id_one}/target-or-actor/{user_id_two}'
-
-        wrapped_callback = wrap_callback(callback=callback,
-                                         data_type=Transaction)
-        # Make the request
-        response = self.__api_client.call_api(resource_path=resource_path,
-                                              method='GET', params=params,
-                                              callback=wrapped_callback)
-        # Return None if threaded
-        if callback:
-            return
-
-        return deserialize(response=response,
-                           data_type=Transaction).set_method(method=self.get_transaction_between_two_users,
-                                                             kwargs={"user_id_one": user_id_one,
-                                                                             "user_id_two": user_id_two})
+        response = self.__api_client.call_api(
+            resource_path=f"/stories/target-or-actor/{endpoint_suffix}",
+            method="GET",
+            params=params,
+        )
+        return response

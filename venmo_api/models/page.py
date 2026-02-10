@@ -1,4 +1,9 @@
+from collections.abc import Callable
+from typing import Self
+
+
 class Page(list):
+    """fancy list that calls it's own next-in-line"""
 
     def __init__(self):
         super().__init__()
@@ -6,13 +11,16 @@ class Page(list):
         self.kwargs = {}
         self.current_offset = -1
 
-    def set_method(self, method, kwargs, current_offset=-1):
-        """
-        set the method and kwargs for paging. current_offset is provided for routes that require offset.
-        :param method:
-        :param kwargs:
-        :param current_offset:
-        :return:
+    def set_method(self, method: Callable, kwargs: dict, current_offset=-1) -> Self:
+        """set the method and kwargs for paging. current_offset is provided for routes that require offset.
+
+        Args:
+            method (Callable): function to call to fetch next page.
+            kwargs (dict): function kwargs to call with.
+            current_offset (int, optional): Page offset. Defaults to -1.
+
+        Returns:
+            Page: this object
         """
         self.method = method
         self.kwargs = kwargs
@@ -22,15 +30,14 @@ class Page(list):
     def get_next_page(self):
         """
         Get the next page of data. Returns empty Page if none exists
-        :return:
         """
         if not self.kwargs or not self.method or len(self) == 0:
             return self.__init__()
 
         # use offset or before_id for paging, depending on the route
         if self.current_offset > -1:
-            self.kwargs['offset'] = self.current_offset + len(self)
+            self.kwargs["offset"] = self.current_offset + len(self)
         else:
-            self.kwargs['before_id'] = self[-1].id
+            self.kwargs["before_id"] = self[-1].id
 
         return self.method(**self.kwargs)
